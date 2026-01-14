@@ -146,7 +146,7 @@ const en = {
   "terms.faq.13.policy_list_3": "Applies regardless of the deposit amount",
   "terms.faq.13.footer": "Please use only one account and keep your information accurate to avoid issues.",
   "terms.help.title": "Need more help?",
-  "terms.help.subtitle": "Email: support@5gbotify.com - our team is available to assist with account, payout, and policy questions.",
+  "terms.help.subtitle": "Email: support@5gbotify.com - our team is 24/7 available to assist with account, payout, and policy questions.",
   "support.header.title": "Support Center",
   "support.header.subtitle": "Get help with your account and platform features",
   "support.contact.title": "Contact Information",
