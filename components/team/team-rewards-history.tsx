@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils/formatting"
 import { ensureDate, ensureNumber } from "@/lib/utils/safe-parsing"
+import { useI18n } from "@/lib/i18n/provider"
 
 export interface TeamRewardHistoryEntry {
   id?: string
@@ -23,50 +24,54 @@ interface TeamRewardsHistoryProps {
   isLoading: boolean
 }
 
-function formatPayer(entry: TeamRewardHistoryEntry) {
+function formatPayer(entry: TeamRewardHistoryEntry, t: (key: string, fallback?: string) => string) {
   const payer = entry.payer ?? null
-  if (!payer) return "Unknown"
+  if (!payer) return t("team.rewards_history.unknown", "Unknown")
 
   if (typeof payer.name === "string" && payer.name.trim().length > 0) return payer.name
   if (typeof payer.email === "string" && payer.email.trim().length > 0) return payer.email
-  if (typeof payer.id === "string" && payer.id.length > 0) return `User ${payer.id.slice(-6)}`
-  return "Unknown"
+  if (typeof payer.id === "string" && payer.id.length > 0) {
+    return `${t("team.rewards_history.user_prefix", "User ")}${payer.id.slice(-6)}`
+  }
+  return t("team.rewards_history.unknown", "Unknown")
 }
 
-function formatPercent(value: number) {
+function formatPercent(value: number, t: (key: string, fallback?: string) => string) {
   const rounded = ensureNumber(value, Number.NaN)
   if (!Number.isFinite(rounded)) {
-    return "N/A"
+    return t("team.rewards_history.na", "N/A")
   }
 
   return `${Number.parseFloat(rounded.toFixed(2))}%`
 }
 
-function formatType(type: TeamRewardHistoryEntry["type"]) {
-  if (type === "TEAM_EARN_L1") return "Team Earning (L1)"
-  if (type === "TEAM_EARN_L2") return "Team Earning (L2)"
-  return "Team Earning"
+function formatType(type: TeamRewardHistoryEntry["type"], t: (key: string, fallback?: string) => string) {
+  if (type === "TEAM_EARN_L1") return t("team.rewards_history.type_l1", "Team Earning (L1)")
+  if (type === "TEAM_EARN_L2") return t("team.rewards_history.type_l2", "Team Earning (L2)")
+  return t("team.rewards_history.type_default", "Team Earning")
 }
 
 export function TeamRewardsHistory({ entries, isLoading }: TeamRewardsHistoryProps) {
+  const { t } = useI18n()
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Daily Rewards History</CardTitle>
+        <CardTitle className="text-lg">{t("team.rewards_history.title", "Daily Rewards History")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Claimed team earnings appear here with the original earnings amount and payout rate.
+          {t("team.rewards_history.subtitle", "Claimed team earnings appear here with the original earnings amount and payout rate.")}
         </p>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="whitespace-nowrap">Claimed</TableHead>
-              <TableHead className="whitespace-nowrap">Source User</TableHead>
-              <TableHead className="whitespace-nowrap">Type</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Base Amount</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Percent</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Payout</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.rewards_history.claimed", "Claimed")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.rewards_history.source", "Source User")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.rewards_history.type", "Type")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.rewards_history.base", "Base Amount")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.rewards_history.percent", "Percent")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.rewards_history.payout", "Payout")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,7 +89,7 @@ export function TeamRewardsHistory({ entries, isLoading }: TeamRewardsHistoryPro
             ) : entries.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
-                  No claimed rewards yet. Claim your available team earnings to populate this history.
+                  {t("team.rewards_history.empty", "No claimed rewards yet. Claim your available team earnings to populate this history.")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -92,17 +97,17 @@ export function TeamRewardsHistory({ entries, isLoading }: TeamRewardsHistoryPro
                 const claimedAt = ensureDate(entry.claimedAt)
                 const claimedDate = claimedAt
                   ? `${formatDate(claimedAt, "long")} ${formatTime(claimedAt)}`
-                  : "Date unavailable"
+                  : t("team.rewards_history.date_unavailable", "Date unavailable")
                 const baseAmount = ensureNumber(entry.baseAmount, 0)
                 const amount = ensureNumber(entry.amount, 0)
-                const percentDisplay = formatPercent(entry.percent ?? Number.NaN)
+                const percentDisplay = formatPercent(entry.percent ?? Number.NaN, t)
                 const rowKey = typeof entry.id === "string" && entry.id.length > 0 ? entry.id : `history-${index}`
 
                 return (
                   <TableRow key={rowKey}>
                     <TableCell className="whitespace-nowrap">{claimedDate}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatPayer(entry)}</TableCell>
-                    <TableCell className="whitespace-nowrap">{formatType(entry.type)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{formatPayer(entry, t)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{formatType(entry.type, t)}</TableCell>
                     <TableCell className="whitespace-nowrap text-right">{formatCurrency(baseAmount)}</TableCell>
                     <TableCell className="whitespace-nowrap text-right">{percentDisplay}</TableCell>
                     <TableCell className="whitespace-nowrap text-right">{formatCurrency(amount)}</TableCell>

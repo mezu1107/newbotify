@@ -21,6 +21,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { TEAM_REWARD_UNLOCK_LEVEL } from "@/lib/constants/bonuses"
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils/formatting"
 import { ensureDate, ensureNumber } from "@/lib/utils/safe-parsing"
+import { useI18n } from "@/lib/i18n/provider"
 
 import { TeamList } from "./TeamList"
 
@@ -180,17 +181,20 @@ interface AvailableToClaimCardProps {
   unlockLevel?: number
 }
 
-function buildSourceLabel(payer: PendingRewardItem["payer"]): string {
-  if (!payer) return "Unknown"
+function buildSourceLabel(
+  payer: PendingRewardItem["payer"],
+  t: (key: string, fallback?: string) => string,
+): string {
+  if (!payer) return t("team.pending.unknown", "Unknown")
   if (typeof payer.name === "string" && payer.name.trim().length > 0) return payer.name
   if (typeof payer.email === "string" && payer.email.trim().length > 0) return payer.email
   const payerId = typeof payer.id === "string" ? payer.id : null
-  return payerId ? `User ${payerId.slice(-6)}` : "Unknown"
+  return payerId ? `${t("team.pending.user_prefix", "User ")}${payerId.slice(-6)}` : t("team.pending.unknown", "Unknown")
 }
 
-const toPercentDisplay = (fractional: unknown): string => {
+const toPercentDisplay = (fractional: unknown, t: (key: string, fallback?: string) => string): string => {
   const value = ensureNumber(fractional, Number.NaN)
-  if (!Number.isFinite(value)) return "N/A"
+  if (!Number.isFinite(value)) return t("team.pending.na", "N/A")
   return `${(value * 100).toFixed(2)}%`
 }
 
@@ -202,6 +206,7 @@ function AvailableToClaimCard({
   isLocked = false,
   unlockLevel = 1,
 }: AvailableToClaimCardProps) {
+  const { t } = useI18n()
   const hasItems = items.length > 0
   const sorted = [...items].sort((a, b) => {
     const da = ensureDate(a.createdAt)?.getTime() ?? 0
@@ -209,18 +214,24 @@ function AvailableToClaimCard({
     return db - da // newest first
   })
   const claimDisabled = isClaiming || !hasItems || isLocked
-  const unlockLabel = `Level ${unlockLevel}`
+  const unlockLabel = `${t("team.pending.level", "Level")} ${unlockLevel}`
 
   return (
     <Card className="overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950/40 shadow-xl shadow-emerald-500/15">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(6,182,212,0.12),transparent_40%)]" />
       <CardHeader className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <CardTitle className="text-xl text-white">Available to Claim</CardTitle>
+          <CardTitle className="text-xl text-white">{t("team.pending.title", "Available to Claim")}</CardTitle>
           <p className="text-sm text-slate-400">
             {isLocked
-              ? `Team rewards unlock at ${unlockLabel}. Hit ${unlockLabel} to start stacking claimable earnings.`
-              : "Review unclaimed team earnings. Claiming will credit the payout amount to your wallet balance."}
+              ? `${t("team.pending.locked_prefix", "Team rewards unlock at ")}${unlockLabel}${t(
+                  "team.pending.locked_suffix",
+                  ". Hit ",
+                )}${unlockLabel}${t("team.pending.locked_suffix_two", " to start stacking claimable earnings.")}`
+              : t(
+                  "team.pending.subtitle",
+                  "Review unclaimed team earnings. Claiming will credit the payout amount to your wallet balance.",
+                )}
           </p>
         </div>
         <Button
@@ -228,20 +239,24 @@ function AvailableToClaimCard({
           disabled={claimDisabled}
           className="border border-emerald-400/40 bg-emerald-500/15 text-emerald-100 shadow-lg shadow-emerald-500/20 hover:border-emerald-300/60"
         >
-          {isLocked ? `Locked until ${unlockLabel}` : isClaiming ? "Claiming..." : "Claim all"}
+          {isLocked
+            ? `${t("team.pending.locked_until", "Locked until ")}${unlockLabel}`
+            : isClaiming
+              ? t("team.pending.claiming", "Claiming...")
+              : t("team.pending.claim_all", "Claim all")}
         </Button>
       </CardHeader>
       <CardContent className="relative overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-emerald-500/20 text-slate-300">
-              <TableHead className="whitespace-nowrap">Earned</TableHead>
-              <TableHead className="whitespace-nowrap">Source</TableHead>
-              <TableHead className="whitespace-nowrap">Type</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Base</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Percent</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Payout</TableHead>
-              <TableHead className="whitespace-nowrap text-right">Action</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.pending.header.earned", "Earned")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.pending.header.source", "Source")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("team.pending.header.type", "Type")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.pending.header.base", "Base")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.pending.header.percent", "Percent")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.pending.header.payout", "Payout")}</TableHead>
+              <TableHead className="whitespace-nowrap text-right">{t("team.pending.header.action", "Action")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -261,8 +276,14 @@ function AvailableToClaimCard({
               <TableRow>
                 <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-400">
                   {isLocked
-                    ? `Reach ${unlockLabel} to start accumulating claimable team rewards.`
-                    : "No team earnings are waiting to be claimed right now. New rewards will appear here when your team earns."}
+                    ? `${t("team.pending.empty_locked_prefix", "Reach ")}${unlockLabel}${t(
+                        "team.pending.empty_locked_suffix",
+                        " to start accumulating claimable team rewards.",
+                      )}`
+                    : t(
+                        "team.pending.empty",
+                        "No team earnings are waiting to be claimed right now. New rewards will appear here when your team earns.",
+                      )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -270,16 +291,16 @@ function AvailableToClaimCard({
                 const createdAt = ensureDate(item.createdAt)
                 const createdDisplay = createdAt
                   ? `${formatDate(createdAt, "long")} ${formatTime(createdAt)}`
-                  : "Date unavailable"
+                  : t("team.pending.date_unavailable", "Date unavailable")
                 const baseAmount = ensureNumber(item.baseAmount, 0)
                 const amount = ensureNumber(item.amount, 0)
-                const sourceDisplay = buildSourceLabel(item.payer ?? null)
+                const sourceDisplay = buildSourceLabel(item.payer ?? null, t)
                 const typeLabel =
                   item.type === "TEAM_EARN_L1"
-                    ? "Team earning (L1)"
+                    ? t("team.pending.type_l1", "Team earning (L1)")
                     : item.type === "TEAM_EARN_L2"
-                      ? "Team earning (L2)"
-                      : "Team earning"
+                      ? t("team.pending.type_l2", "Team earning (L2)")
+                      : t("team.pending.type_default", "Team earning")
                 const rowKey = typeof item.id === "string" && item.id.length > 0 ? item.id : `pending-${index}`
 
                 return (
@@ -288,7 +309,7 @@ function AvailableToClaimCard({
                     <TableCell className="whitespace-nowrap">{sourceDisplay}</TableCell>
                     <TableCell className="whitespace-nowrap">{typeLabel}</TableCell>
                     <TableCell className="whitespace-nowrap text-right">{formatCurrency(baseAmount)}</TableCell>
-                    <TableCell className="whitespace-nowrap text-right">{toPercentDisplay(item.percent)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right">{toPercentDisplay(item.percent, t)}</TableCell>
                     <TableCell className="whitespace-nowrap text-right text-emerald-200">
                       {formatCurrency(amount)}
                     </TableCell>
@@ -300,7 +321,7 @@ function AvailableToClaimCard({
                         onClick={onClaim}
                         disabled={isClaiming || isLocked}
                       >
-                        {isLocked ? "Locked" : "Claim"}
+                        {isLocked ? t("team.pending.locked", "Locked") : t("team.pending.claim", "Claim")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -316,6 +337,7 @@ function AvailableToClaimCard({
 
 export default function TeamPageShell() {
   const { toast } = useToast()
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState("structure")
 
   const [cachedLevelData, setCachedLevelData] = useState<LevelResponse | null>(() => readCachedLevelData())
@@ -419,8 +441,11 @@ export default function TeamPageShell() {
     if (isClaiming) return
     if (teamRewardsLocked) {
       toast({
-        title: "Team rewards locked",
-        description: `Reach Level ${TEAM_REWARD_UNLOCK_LEVEL} to claim team rewards.`,
+        title: t("team.rewards.toast.locked_title", "Team rewards locked"),
+        description: `${t("team.rewards.toast.locked_prefix", "Reach Level ")}${TEAM_REWARD_UNLOCK_LEVEL}${t(
+          "team.rewards.toast.locked_suffix",
+          " to claim team rewards.",
+        )}`,
       })
       return
     }
@@ -444,11 +469,11 @@ export default function TeamPageShell() {
           payload && typeof payload === "object" && payload !== null && "error" in payload &&
           typeof (payload as { error?: unknown }).error === "string"
             ? (payload as { error: string }).error
-            : "Please try again in a moment."
+            : t("team.rewards.toast.error_fallback", "Please try again in a moment.")
 
         toast({
           variant: "destructive",
-          title: "Unable to claim rewards",
+          title: t("team.rewards.toast.unable_title", "Unable to claim rewards"),
           description: errorMessage,
         })
         return
@@ -459,15 +484,15 @@ export default function TeamPageShell() {
       const credited = ensureNumber((payload as RewardsResponse | null)?.creditedAmount, 0)
 
       toast({
-        title: "Rewards added to balance",
-        description: `Successfully claimed ${formatCurrency(credited)}.`,
+        title: t("team.rewards.toast.success_title", "Rewards added to balance"),
+        description: `${t("team.rewards.toast.success_prefix", "Successfully claimed ")}${formatCurrency(credited)}.`,
       })
     } catch (error) {
       console.error("Claim rewards error", error)
       toast({
         variant: "destructive",
-        title: "Unexpected error",
-        description: "We couldn't process your claim. Please try again.",
+        title: t("team.rewards.toast.unexpected_title", "Unexpected error"),
+        description: t("team.rewards.toast.unexpected_desc", "We couldn't process your claim. Please try again."),
       })
     } finally {
       setIsClaiming(false)
@@ -491,7 +516,7 @@ export default function TeamPageShell() {
     if (levelError && !levelData) {
       return (
         <div className="rounded-xl border border-border/60 bg-card p-6 text-sm text-destructive">
-          Unable to load level progress right now. Please try again shortly.
+          {t("team.levels.error", "Unable to load level progress right now. Please try again shortly.")}
         </div>
       )
     }
@@ -514,7 +539,7 @@ export default function TeamPageShell() {
 
     return (
       <div className="rounded-xl border border-border/60 bg-card p-6 text-sm text-muted-foreground">
-        No level progress data is available yet. Engage your team to start tracking progress.
+        {t("team.levels.empty", "No level progress data is available yet. Engage your team to start tracking progress.")}
       </div>
     )
   }, [levelData, levelError, levelLoading])
@@ -532,16 +557,16 @@ export default function TeamPageShell() {
           <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600/20 via-slate-900 to-cyan-600/15 p-6 shadow-2xl shadow-emerald-500/20">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.35em] text-emerald-100">Signal your crew</p>
-                <h1 className="text-3xl font-bold text-white">Team Command</h1>
+                <p className="text-xs uppercase tracking-[0.35em] text-emerald-100">{t("team.header.kicker", "Signal your crew")}</p>
+                <h1 className="text-3xl font-bold text-white">{t("team.header.title", "Team Command")}</h1>
                 <p className="text-sm text-emerald-50/80">
-                  Track referral health, unlock levels, and claim team earnings in one fresh view.
+                  {t("team.header.subtitle", "Track referral health, unlock levels, and claim team earnings in one fresh view.")}
                 </p>
               </div>
               <div className="flex gap-2">
-                <Badge className="border border-white/20 bg-white/10 text-white">Live sync</Badge>
+                <Badge className="border border-white/20 bg-white/10 text-white">{t("team.header.badge_live", "Live sync")}</Badge>
                 <Badge variant="secondary" className="border border-emerald-300/50 bg-emerald-500/15 text-emerald-50">
-                  Crew mode
+                  {t("team.header.badge_crew", "Crew mode")}
                 </Badge>
               </div>
             </div>
@@ -553,13 +578,13 @@ export default function TeamPageShell() {
                 value="structure"
                 className="rounded-xl px-4 py-2 text-base font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500/40 data-[state=active]:to-cyan-500/40 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25"
               >
-                Team Directory
+                {t("team.tabs.directory", "Team Directory")}
               </TabsTrigger>
               <TabsTrigger
                 value="levels"
                 className="rounded-xl px-4 py-2 text-base font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500/40 data-[state=active]:to-cyan-500/40 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25"
               >
-                Levels &amp; Progress
+                {t("team.tabs.levels", "Levels & Progress")}
               </TabsTrigger>
             </TabsList>
 
@@ -578,7 +603,7 @@ export default function TeamPageShell() {
                 />
               ) : rewardsError ? (
                 <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-100">
-                  Unable to load rewards summary. Please refresh to try again.
+                  {t("team.rewards.error_summary", "Unable to load rewards summary. Please refresh to try again.")}
                 </div>
               ) : null}
 
@@ -598,7 +623,7 @@ export default function TeamPageShell() {
 
               {historyError ? (
                 <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-                  We couldn't load the rewards history. Please refresh the page.
+                  {t("team.rewards.error_history", "We couldn't load the rewards history. Please refresh the page.")}
                 </div>
               ) : null}
 
@@ -611,11 +636,11 @@ export default function TeamPageShell() {
                 />
               ) : teamStructureError ? (
                 <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-100">
-                  Unable to load the team hierarchy. Please try refreshing the page.
+                  {t("team.hierarchy.error", "Unable to load the team hierarchy. Please try refreshing the page.")}
                 </div>
               ) : (
                 <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-6 text-sm text-emerald-50">
-                  Build your network to see a visual hierarchy of how your team is structured.
+                  {t("team.hierarchy.empty", "Build your network to see a visual hierarchy of how your team is structured.")}
                 </div>
               )}
 
@@ -625,11 +650,11 @@ export default function TeamPageShell() {
             <TabsContent value="levels" className="space-y-6">
               {levelContent}
               {activeTab === "levels" && levelValidating && levelData ? (
-                <div className="text-xs text-emerald-100/80">Updating level details...</div>
+                <div className="text-xs text-emerald-100/80">{t("team.levels.updating", "Updating level details...")}</div>
               ) : null}
               {activeTab === "levels" && levelError && levelData ? (
                 <div className="text-xs text-red-200">
-                  Unable to refresh level progress right now. Showing your last available data.
+                  {t("team.levels.refresh_error", "Unable to refresh level progress right now. Showing your last available data.")}
                 </div>
               ) : null}
             </TabsContent>

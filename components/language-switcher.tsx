@@ -60,7 +60,7 @@ export function LanguageSwitcher({ variant = "header", onSelected }: LanguageSwi
             onSelect={() => handleSelect(option.code)}
             className={cn(option.code === language && "bg-accent text-accent-foreground")}
           >
-            {option.label}
+            {t(option.labelKey, option.label)}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSub>
@@ -74,7 +74,7 @@ export function LanguageSwitcher({ variant = "header", onSelected }: LanguageSwi
                 onSelect={() => handleSelect(option.code)}
                 className={cn(option.code === language && "bg-accent text-accent-foreground")}
               >
-                {option.label}
+                {t(option.labelKey, option.label)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuSubContent>
