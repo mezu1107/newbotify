@@ -1,9 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Zap } from "lucide-react"
 import Image from "next/image"
+import { useI18n } from "@/lib/i18n/provider"
 
 export default function HomePage() {
+  const { t } = useI18n()
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-signal text-slate-50">
       <div className="pointer-events-none absolute inset-0 opacity-70">
@@ -20,18 +25,18 @@ export default function HomePage() {
             </div>
             <div>
               <p className="text-xs uppercase tracking-[0.26em] text-emerald-200">5gbotify</p>
-              <p className="text-sm text-slate-300">Signal-grade orchestration</p>
+              <p className="text-sm text-slate-300">{t("home.header.tagline", "Signal-grade orchestration")}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <Link href="/auth/login">
               <Button variant="ghost" className="border border-slate-800/70 bg-slate-900/60 text-slate-200 hover:border-emerald-400/70">
-                Sign In
+                {t("home.header.sign_in", "Sign In")}
               </Button>
             </Link>
             <Link href="/auth/register">
               <Button className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 text-slate-950 shadow-[0_12px_40px_-18px_rgba(59,130,246,0.8)]">
-                Get Started
+                {t("home.header.get_started", "Get Started")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -44,37 +49,46 @@ export default function HomePage() {
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div className="space-y-6">
             <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase text-emerald-100">
-              Network harvester ready
+              {t("home.hero.badge", "Network harvester ready")}
             </p>
             <h1 className="text-balance text-4xl font-bold leading-tight sm:text-5xl">
-              Run a <span className="text-emerald-300">5G-grade</span> earning surface that looks nothing like 5gBotify.
+              {t("home.hero.title_prefix", "Run a ")}
+              <span className="text-emerald-300">{t("home.hero.title_emphasis", "5G-grade")}</span>
+              {t("home.hero.title_suffix", " earning surface that looks nothing like 5gBotify.")}
             </h1>
             <p className="text-balance text-lg text-slate-300">
-              5gbotify ships a top-nav, telemetry-first interface with sharper edges, darker canvas, and bright neon accents.
+              {t(
+                "home.hero.subtitle",
+                "5gbotify ships a top-nav, telemetry-first interface with sharper edges, darker canvas, and bright neon accents.",
+              )}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link href="/auth/register">
                 <Button size="lg" className="h-12 min-w-[200px] bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-400/30 hover:bg-emerald-300">
-                  Start boosting
+                  {t("home.hero.start_boosting", "Start boosting")}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/auth/login">
                 <Button size="lg" variant="outline" className="h-12 min-w-[200px] border-slate-700 bg-slate-900/60 text-slate-100 hover:border-cyan-400/70">
-                  I already have an account
+                  {t("home.hero.already_have_account", "I already have an account")}
                 </Button>
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-800/80 bg-slate-900/70 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Latency monitor</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">
+                  {t("home.metrics.latency.title", "Latency monitor")}
+                </p>
                 <p className="mt-2 text-2xl font-semibold text-white">42 ms</p>
-                <p className="text-sm text-slate-400">Average pipeline handshake time.</p>
+                <p className="text-sm text-slate-400">{t("home.metrics.latency.subtitle", "Average pipeline handshake time.")}</p>
               </div>
               <div className="rounded-xl border border-slate-800/80 bg-slate-900/70 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">Crew online</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
+                  {t("home.metrics.crew.title", "Crew online")}
+                </p>
                 <p className="mt-2 text-2xl font-semibold text-white">+1,280</p>
-                <p className="text-sm text-slate-400">Operators active in the 5g mesh.</p>
+                <p className="text-sm text-slate-400">{t("home.metrics.crew.subtitle", "Operators active in the 5g mesh.")}</p>
               </div>
             </div>
           </div>
@@ -85,29 +99,31 @@ export default function HomePage() {
               <div className="absolute -bottom-14 -right-12 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl" />
               <div className="relative space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Orbit preview</p>
-                  <span className="rounded-md bg-slate-800 px-3 py-1 text-[11px] font-semibold text-emerald-200">alpha ring</span>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-300">{t("home.orbit.preview", "Orbit preview")}</p>
+                  <span className="rounded-md bg-slate-800 px-3 py-1 text-[11px] font-semibold text-emerald-200">
+                    {t("home.orbit.badge", "alpha ring")}
+                  </span>
                 </div>
                 <div className="rounded-xl border border-slate-800/70 bg-slate-950/70 p-4">
                   <div className="flex items-center justify-between text-sm text-slate-300">
-                    <span>Boost aperture</span>
-                    <span className="font-semibold text-emerald-200">Ready</span>
+                    <span>{t("home.orbit.boost_aperture", "Boost aperture")}</span>
+                    <span className="font-semibold text-emerald-200">{t("home.orbit.ready", "Ready")}</span>
                   </div>
                   <div className="mt-3 h-2 rounded-full bg-slate-800">
                     <div className="h-full w-5/6 rounded-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500" />
                   </div>
-                  <p className="mt-3 text-xs text-slate-400">Engine tuned for single-tap acceleration.</p>
+                  <p className="mt-3 text-xs text-slate-400">{t("home.orbit.engine", "Engine tuned for single-tap acceleration.")}</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-cyan-200">Cycle ETA</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-cyan-200">{t("home.orbit.cycle_eta", "Cycle ETA")}</p>
                     <p className="mt-1 text-xl font-semibold text-white">02:14:09</p>
-                    <p className="text-xs text-slate-400">Until next auto-open window.</p>
+                    <p className="text-xs text-slate-400">{t("home.orbit.cycle_note", "Until next auto-open window.")}</p>
                   </div>
                   <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                    <p className="text-xs uppercase tracking-[0.18em] text-amber-200">Throttle</p>
-                    <p className="mt-1 text-xl font-semibold text-white">Adaptive</p>
-                    <p className="text-xs text-slate-400">Governed by fraud guards.</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-amber-200">{t("home.orbit.throttle", "Throttle")}</p>
+                    <p className="mt-1 text-xl font-semibold text-white">{t("home.orbit.throttle_value", "Adaptive")}</p>
+                    <p className="text-xs text-slate-400">{t("home.orbit.throttle_note", "Governed by fraud guards.")}</p>
                   </div>
                 </div>
               </div>
@@ -124,8 +140,10 @@ export default function HomePage() {
                   <Zap className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">Signal-first earnings</h3>
-                  <p className="text-sm text-slate-400">Trigger payouts with clear telemetry and fast feedback.</p>
+                  <h3 className="text-xl font-semibold">{t("home.features.signal.title", "Signal-first earnings")}</h3>
+                  <p className="text-sm text-slate-400">
+                    {t("home.features.signal.subtitle", "Trigger payouts with clear telemetry and fast feedback.")}
+                  </p>
                 </div>
               </div>
               <ArrowRight className="h-5 w-5 text-emerald-300 opacity-70 transition group-hover:translate-x-1 group-hover:opacity-100" />
@@ -138,8 +156,10 @@ export default function HomePage() {
                   <Shield className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">Operational security</h3>
-                  <p className="text-sm text-slate-400">Layered protections keep payouts clean and auditable.</p>
+                  <h3 className="text-xl font-semibold">{t("home.features.security.title", "Operational security")}</h3>
+                  <p className="text-sm text-slate-400">
+                    {t("home.features.security.subtitle", "Layered protections keep payouts clean and auditable.")}
+                  </p>
                 </div>
               </div>
               <ArrowRight className="h-5 w-5 text-cyan-300 opacity-70 transition group-hover:translate-x-1 group-hover:opacity-100" />

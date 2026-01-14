@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowUpRight, CheckCircle, Loader2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface WalletAddressOption {
   id: string
@@ -32,6 +33,7 @@ const initialState: WithdrawFormState = { error: null, success: null, balances: 
 
 function SubmitButton() {
   const { pending } = useFormStatus()
+  const { t } = useI18n()
 
   return (
     <Button
@@ -42,12 +44,12 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Submitting...
+          {t("withdraw.form.submitting", "Submitting...")}
         </>
       ) : (
         <>
           <ArrowUpRight className="mr-2 h-4 w-4" />
-          Submit Withdrawal Request
+          {t("withdraw.form.submit", "Submit Withdrawal Request")}
         </>
       )}
     </Button>
@@ -61,6 +63,7 @@ export function WithdrawForm({
   walletBalance,
   earningsBalance,
 }: WithdrawFormProps) {
+  const { t } = useI18n()
   const [state, formAction] = useFormState(submitWithdrawAction, initialState)
 
   const [amount, setAmount] = useState("")
@@ -92,13 +95,13 @@ export function WithdrawForm({
         if (!active) return
 
         if (!response.ok) {
-          setAddressError(data?.error ?? "Unable to load saved addresses.")
+          setAddressError(data?.error ?? t("withdraw.form.addresses_error", "Unable to load saved addresses."))
           setAddresses([])
         } else {
           const loadedAddresses = Array.isArray(data?.addresses)
             ? (data.addresses as any[]).map((item) => ({
                 id: String(item._id ?? item.id ?? ""),
-                label: String(item.label ?? "Unnamed"),
+                label: String(item.label ?? t("withdraw.form.address_unnamed", "Unnamed")),
                 chain: String(item.chain ?? ""),
                 address: String(item.address ?? ""),
                 verified: Boolean(item.verified ?? false),
@@ -111,7 +114,7 @@ export function WithdrawForm({
       } catch (error) {
         console.error("Failed to fetch saved addresses", error)
         if (!active) return
-        setAddressError("Unable to load saved addresses.")
+        setAddressError(t("withdraw.form.addresses_error", "Unable to load saved addresses."))
         setAddresses([])
       } finally {
         if (active) {
@@ -208,31 +211,36 @@ export function WithdrawForm({
       <div className="rounded-2xl border border-slate-200 bg-muted/20 p-4 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-900/40 space-y-2">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-foreground">
           <span>
-            Withdrawable now: <strong>${availableToWithdraw.toFixed(2)}</strong>
+            {t("withdraw.form.summary.withdrawable", "Withdrawable now: ")}
+            <strong>${availableToWithdraw.toFixed(2)}</strong>
           </span>
           <span>
-            Pending approval: <strong>${pendingTotal.toFixed(2)}</strong>
+            {t("withdraw.form.summary.pending", "Pending approval: ")}
+            <strong>${pendingTotal.toFixed(2)}</strong>
           </span>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span>
-            Wallet balance: <strong className="text-foreground">${walletTotal.toFixed(2)}</strong>
+            {t("withdraw.form.summary.wallet", "Wallet balance: ")}
+            <strong className="text-foreground">${walletTotal.toFixed(2)}</strong>
           </span>
         </div>
         <div className="flex flex-col gap-1 text-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
-            Earnings balance: <strong>${earningsBalance.toFixed(2)}</strong>
+            {t("withdraw.form.summary.earnings", "Earnings balance: ")}
+            <strong>${earningsBalance.toFixed(2)}</strong>
           </span>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Minimum withdrawal: ${minWithdraw.toFixed(2)} USDT. Any balance above the minimum is ready for immediate
-          withdrawal.
+          {t("withdraw.form.summary.minimum_prefix", "Minimum withdrawal: $")}
+          {minWithdraw.toFixed(2)}
+          {t("withdraw.form.summary.minimum_suffix", " USDT. Any balance above the minimum is ready for immediate withdrawal.")}
         </p>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="withdraw-amount">Amount (USDT)</Label>
+          <Label htmlFor="withdraw-amount">{t("withdraw.form.amount_label", "Amount (USDT)")}</Label>
           <Input
             id="withdraw-amount"
             name="amount"
@@ -243,39 +251,42 @@ export function WithdrawForm({
             required
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            placeholder={`Enter at least $${minWithdraw.toFixed(2)}`}
+            placeholder={`${t("withdraw.form.amount_placeholder_prefix", "Enter at least $")}${minWithdraw.toFixed(2)}`}
           />
           <p className="text-xs text-muted-foreground">
-            Withdraw at least ${minWithdraw.toFixed(2)} and no more than your available balance.
+            {t("withdraw.form.amount_help_prefix", "Withdraw at least $")}
+            {minWithdraw.toFixed(2)}
+            {t("withdraw.form.amount_help_suffix", " and no more than your available balance.")}
           </p>
           <p className="text-xs font-semibold text-foreground">
-            Available from earnings: ${availableToWithdraw.toFixed(2)}
+            {t("withdraw.form.amount_available_prefix", "Available from earnings: $")}
+            {availableToWithdraw.toFixed(2)}
           </p>
           {exceedsSelectedBalance ? (
-            <p className="text-xs text-destructive">Withdrawal amount cannot exceed your available balance.</p>
+            <p className="text-xs text-destructive">{t("withdraw.form.amount_exceed", "Withdrawal amount cannot exceed your available balance.")}</p>
           ) : null}
         </div>
 
         <div className="space-y-3">
-          <Label>Destination wallet</Label>
+          <Label>{t("withdraw.form.destination_label", "Destination wallet")}</Label>
           <Tabs value={addressMode} onValueChange={(value) => setAddressMode(value as "saved" | "manual")}>
             <TabsList>
               <TabsTrigger value="saved" disabled={addresses.length === 0}>
-                Saved addresses
+                {t("withdraw.form.destination_saved", "Saved addresses")}
               </TabsTrigger>
-              <TabsTrigger value="manual">New address</TabsTrigger>
+              <TabsTrigger value="manual">{t("withdraw.form.destination_manual", "New address")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="saved" className="mt-3 space-y-3">
               {isLoadingAddresses ? (
-                <p className="text-sm text-muted-foreground">Loading saved addresses…</p>
+                <p className="text-sm text-muted-foreground">{t("withdraw.form.addresses_loading", "Loading saved addresses…")}</p>
               ) : addresses.length === 0 ? (
-                <p className="text-sm text-muted-foreground">You have no saved addresses yet.</p>
+                <p className="text-sm text-muted-foreground">{t("withdraw.form.addresses_empty", "You have no saved addresses yet.")}</p>
               ) : (
                 <>
                   <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a saved address" />
+                      <SelectValue placeholder={t("withdraw.form.addresses_select", "Select a saved address")} />
                     </SelectTrigger>
                     <SelectContent>
                       {addresses.map((address) => (
@@ -305,12 +316,15 @@ export function WithdrawForm({
                 name="walletAddress"
                 value={manualAddress}
                 onChange={(event) => setManualAddress(event.target.value)}
-                placeholder="Enter the USDT wallet address"
+                placeholder={t("withdraw.form.address_manual_placeholder", "Enter the USDT wallet address")}
                 autoComplete="off"
                 required={addressMode === "manual"}
               />
               <p className="text-xs text-muted-foreground">
-                Double-check the address network. Withdrawals sent to the wrong chain cannot be recovered.
+                {t(
+                  "withdraw.form.address_manual_help",
+                  "Double-check the address network. Withdrawals sent to the wrong chain cannot be recovered.",
+                )}
               </p>
             </TabsContent>
           </Tabs>

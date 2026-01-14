@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency } from "@/lib/utils/formatting"
 import { ensureDate, ensureNumber } from "@/lib/utils/safe-parsing"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface TeamMember {
   _id?: string
@@ -70,6 +71,7 @@ const fetcher = async (url: string) => {
 const PAGE_SIZE = 20
 
 export function TeamList({ userId }: TeamListProps) {
+  const { t } = useI18n()
   const [page, setPage] = useState(1)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [total, setTotal] = useState(0)
@@ -144,11 +146,11 @@ export function TeamList({ userId }: TeamListProps) {
 
   const summary = useMemo(() => {
     if (total === 0) {
-      return "Keep building your network to see referrals here."
+      return t("team.list.summary.empty", "Keep building your network to see referrals here.")
     }
 
-    return `Showing ${members.length} of ${total} direct referrals`
-  }, [members.length, total])
+    return `${t("team.list.summary.prefix", "Showing ")}${members.length}${t("team.list.summary.middle", " of ")}${total}${t("team.list.summary.suffix", " direct referrals")}`
+  }, [members.length, t, total])
 
   if (!userId) {
     return <TeamListSkeleton />
@@ -158,8 +160,8 @@ export function TeamList({ userId }: TeamListProps) {
     <section className="space-y-5 rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/60 p-5 shadow-2xl shadow-emerald-500/10">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/80">Orbit roster</p>
-          <h2 className="text-2xl font-semibold text-white">Team directory</h2>
+          <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/80">{t("team.list.kicker", "Orbit roster")}</p>
+          <h2 className="text-2xl font-semibold text-white">{t("team.list.title", "Team directory")}</h2>
           <p className="text-sm text-slate-400">{summary}</p>
         </div>
         <Button
@@ -171,7 +173,7 @@ export function TeamList({ userId }: TeamListProps) {
           }}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Refreshing..." : "Refresh list"}
+          {isRefreshing ? t("team.list.refreshing", "Refreshing...") : t("team.list.refresh", "Refresh list")}
         </Button>
       </div>
 
@@ -186,20 +188,22 @@ export function TeamList({ userId }: TeamListProps) {
           </div>
         ) : members.length === 0 ? (
           <div className="md:col-span-2 xl:col-span-3 rounded-xl border border-dashed border-emerald-400/40 bg-emerald-500/5 p-8 text-center text-sm text-emerald-100">
-            No direct referrals yet. Share your referral code to grow your team.
+            {t("team.list.empty", "No direct referrals yet. Share your referral code to grow your team.")}
           </div>
         ) : (
           members.map((member, index) => {
             const createdAt = ensureDate(member.createdAt)
             const joinedLabel = createdAt
-              ? `Joined ${formatDistanceToNow(createdAt, { addSuffix: true })}`
-              : "Joined date unavailable"
+              ? `${t("team.list.joined_prefix", "Joined ")}${formatDistanceToNow(createdAt, { addSuffix: true })}`
+              : t("team.list.joined_unavailable", "Joined date unavailable")
             const levelValue = ensureNumber(member.level, Number.NaN)
-            const levelLabel = Number.isFinite(levelValue) ? `L${levelValue}` : "N/A"
+            const levelLabel = Number.isFinite(levelValue)
+              ? `${t("team.list.level_prefix", "L")}${levelValue}`
+              : t("team.list.na", "N/A")
             const depositTotal = ensureNumber(member.depositTotal, 0)
             const memberId = member._id ?? `member-${index}`
             const idSuffix =
-              typeof member._id === "string" && member._id.length >= 6 ? member._id.slice(-6) : "N/A"
+              typeof member._id === "string" && member._id.length >= 6 ? member._id.slice(-6) : t("team.list.na", "N/A")
             const isQualified = Boolean(member.qualified)
 
             return (
@@ -215,17 +219,17 @@ export function TeamList({ userId }: TeamListProps) {
                         {levelLabel}
                       </span>
                       <Badge variant={isQualified ? "default" : "secondary"} className="text-[11px]">
-                        {isQualified ? "Qualified" : "Not qualified"}
+                        {isQualified ? t("team.list.qualified", "Qualified") : t("team.list.not_qualified", "Not qualified")}
                       </Badge>
                     </div>
-                    <p className="text-lg font-semibold text-white">{member.name ?? "Unnamed member"}</p>
+                    <p className="text-lg font-semibold text-white">{member.name ?? t("team.list.unnamed", "Unnamed member")}</p>
                     <p className="text-xs text-slate-400">{joinedLabel}</p>
                   </div>
-                  <div className="text-right text-xs text-slate-400">ID • {idSuffix}</div>
+                  <div className="text-right text-xs text-slate-400">{t("team.list.id_prefix", "ID • ")}{idSuffix}</div>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm text-slate-200">
-                  <span>Deposited</span>
+                  <span>{t("team.list.deposited", "Deposited")}</span>
                   <span className="font-semibold text-emerald-200">{formatCurrency(depositTotal)}</span>
                 </div>
               </div>
@@ -244,7 +248,7 @@ export function TeamList({ userId }: TeamListProps) {
             }}
             disabled={isValidating && !isInitialLoading}
           >
-            {isValidating && !isInitialLoading ? "Loading..." : "Load more"}
+            {isValidating && !isInitialLoading ? t("team.list.loading", "Loading...") : t("team.list.load_more", "Load more")}
           </Button>
         </div>
       ) : null}

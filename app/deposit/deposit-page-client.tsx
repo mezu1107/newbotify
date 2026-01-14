@@ -13,7 +13,7 @@ import type { DepositWalletOption } from "@/lib/config/wallet"
 interface DepositPageClientProps {
   context: WalletContext
   walletOptions: DepositWalletOption[]
-  loadError: string | null
+  loadError?: { key: string; fallback: string } | null
   isActive: boolean
   lifetimeDeposits: number
   threshold: number
@@ -50,7 +50,7 @@ export function DepositPageClient({
           {loadError && (
             <Alert variant="destructive">
               <AlertTitle>{t("deposit.alert.partial", "Some data failed to load")}</AlertTitle>
-              <AlertDescription>{loadError}</AlertDescription>
+              <AlertDescription>{t(loadError.key, loadError.fallback)}</AlertDescription>
             </Alert>
           )}
 

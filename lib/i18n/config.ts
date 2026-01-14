@@ -8,20 +8,21 @@ export const RTL_LANGUAGES = new Set<LanguageCode>(["ar"])
 export type LanguageOption = {
   code: LanguageCode
   label: string
+  labelKey: string
 }
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-  { code: "en", label: "English" },
-  { code: "fr", label: "French" },
-  { code: "ar", label: "Arabic" },
-  { code: "hi", label: "Hindi" },
-  { code: "vi", label: "Vietnamese" },
+  { code: "en", label: "English", labelKey: "language.english" },
+  { code: "fr", label: "French", labelKey: "language.french" },
+  { code: "ar", label: "Arabic", labelKey: "language.arabic" },
+  { code: "hi", label: "Hindi", labelKey: "language.hindi" },
+  { code: "vi", label: "Vietnamese", labelKey: "language.vietnamese" },
 ]
 
 export const NIGERIAN_OPTIONS: LanguageOption[] = [
-  { code: "ng-ig", label: "Nigerian - Igbo" },
-  { code: "ng-yo", label: "Nigerian - Yoruba" },
-  { code: "ng-ha", label: "Nigerian - Hausa" },
+  { code: "ng-ig", label: "Igbo", labelKey: "language.igbo" },
+  { code: "ng-yo", label: "Yoruba", labelKey: "language.yoruba" },
+  { code: "ng-ha", label: "Hausa", labelKey: "language.hausa" },
 ]
 
 const LANGUAGE_FALLBACKS: Record<string, LanguageCode> = {
