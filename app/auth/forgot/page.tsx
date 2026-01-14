@@ -12,9 +12,11 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { OTPInput } from "@/components/auth/otp-input"
 import { formatOTPSuccessMessage, type OTPSuccessPayload } from "@/lib/utils/otp-messages"
+import { useI18n } from "@/lib/i18n/provider"
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -80,14 +82,17 @@ export default function ForgotPasswordPage() {
         }
 
         if (!response.ok) {
-          setError(data.message || data.error || "Unable to send verification code")
+          setError(data.message || data.error || t("auth.forgot.error.send_code", "Unable to send verification code"))
           return
         }
 
         setSuccess(
           formatOTPSuccessMessage(
             data,
-            "Verification code sent to your email. Enter it below to verify your account.",
+            t(
+              "auth.forgot.info.code_sent",
+              "Verification code sent to your email. Enter it below to verify your account.",
+            ),
           ),
         )
         setStep("verify")
@@ -95,7 +100,8 @@ export default function ForgotPasswordPage() {
         setOtpCountdown(60)
       } catch (submitError) {
         console.error("Forgot password OTP error", submitError)
-        const message = submitError instanceof Error ? submitError.message : "Network error. Please try again."
+        const message =
+          submitError instanceof Error ? submitError.message : t("auth.forgot.error.network", "Network error. Please try again.")
         setError(message)
       } finally {
         setIsLoading(false)
@@ -106,7 +112,7 @@ export default function ForgotPasswordPage() {
 
     if (step === "verify") {
       if (otpValue.length !== 6) {
-        setError("Please enter the 6-digit verification code")
+        setError(t("auth.forgot.error.otp_required", "Please enter the 6-digit verification code"))
         return
       }
 
@@ -126,16 +132,21 @@ export default function ForgotPasswordPage() {
         const data = await response.json().catch(() => ({}))
 
         if (!response.ok) {
-          setError((data as { message?: string; error?: string }).message || (data as { error?: string }).error || "Verification failed")
+          setError(
+            (data as { message?: string; error?: string }).message ||
+              (data as { error?: string }).error ||
+              t("auth.forgot.error.verify_failed", "Verification failed"),
+          )
           return
         }
 
-        setSuccess("Code verified. Set your new password below.")
+        setSuccess(t("auth.forgot.success.code_verified", "Code verified. Set your new password below."))
         setVerifiedCode(otpValue)
         setStep("reset")
       } catch (verifyError) {
         console.error("Verify OTP error", verifyError)
-        const message = verifyError instanceof Error ? verifyError.message : "Network error. Please try again."
+        const message =
+          verifyError instanceof Error ? verifyError.message : t("auth.forgot.error.network", "Network error. Please try again.")
         setError(message)
       } finally {
         setIsLoading(false)
@@ -145,12 +156,12 @@ export default function ForgotPasswordPage() {
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
+      setError(t("auth.forgot.error.password_mismatch", "Passwords do not match"))
       return
     }
 
     if (!verifiedCode) {
-      setError("Verification code is missing. Please verify again.")
+      setError(t("auth.forgot.error.otp_missing", "Verification code is missing. Please verify again."))
       return
     }
 
@@ -170,11 +181,15 @@ export default function ForgotPasswordPage() {
       const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        setError((data as { message?: string; error?: string }).message || (data as { error?: string }).error || "Unable to reset password")
+        setError(
+          (data as { message?: string; error?: string }).message ||
+            (data as { error?: string }).error ||
+            t("auth.forgot.error.reset_failed", "Unable to reset password"),
+        )
         return
       }
 
-      setSuccess("Password updated successfully. Redirecting to login...")
+      setSuccess(t("auth.forgot.success.reset", "Password updated successfully. Redirecting to login..."))
       setFormData({ email: formData.email, password: "", confirmPassword: "" })
       resetFlow()
       redirectTimeout.current = setTimeout(() => {
@@ -182,7 +197,8 @@ export default function ForgotPasswordPage() {
       }, 1500)
     } catch (error) {
       console.error("Forgot password error", error)
-      const message = error instanceof Error ? error.message : "Network error. Please try again."
+      const message =
+        error instanceof Error ? error.message : t("auth.forgot.error.network", "Network error. Please try again.")
       setError(message)
     } finally {
       setIsLoading(false)
@@ -212,18 +228,19 @@ export default function ForgotPasswordPage() {
       }
 
       if (!response.ok) {
-        setError(data.message || data.error || "Unable to resend verification code")
+        setError(data.message || data.error || t("auth.forgot.error.resend_failed", "Unable to resend verification code"))
         return
       }
 
-      setSuccess(formatOTPSuccessMessage(data, "A new verification code has been sent to your email."))
+      setSuccess(formatOTPSuccessMessage(data, t("auth.forgot.info.code_resent", "A new verification code has been sent to your email.")))
       setOtpValue("")
       setOtpCountdown(60)
       setVerifiedCode(null)
       setStep("verify")
     } catch (resendError) {
       console.error("Resend OTP error", resendError)
-      const message = resendError instanceof Error ? resendError.message : "Network error. Please try again."
+      const message =
+        resendError instanceof Error ? resendError.message : t("auth.forgot.error.network", "Network error. Please try again.")
       setError(message)
     } finally {
       setIsResending(false)
@@ -234,7 +251,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[hsl(var(--background))] via-[hsl(var(--secondary))] to-[hsl(var(--muted))] p-4 text-foreground transition-colors dark:from-[#050505] dark:via-[#0a0a0a] dark:to-[#141414]">
       <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-border/70 bg-card shadow-xl shadow-primary/10 transition-colors">
         <div className="bg-gradient-to-r from-primary to-accent py-4 text-center text-primary-foreground">
-          <h1 className="text-lg font-semibold tracking-wide">Reset Your Password</h1>
+          <h1 className="text-lg font-semibold tracking-wide">{t("auth.forgot.header", "Reset Your Password")}</h1>
         </div>
 
         <div className="space-y-6 px-6 py-6 sm:px-8">
@@ -246,14 +263,14 @@ export default function ForgotPasswordPage() {
 
           {error && (
             <Alert variant="destructive">
-              <AlertTitle>Reset failed</AlertTitle>
+              <AlertTitle>{t("auth.forgot.error.title", "Reset failed")}</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           {success && (
             <Alert>
-              <AlertTitle>Success</AlertTitle>
+              <AlertTitle>{t("auth.forgot.success.title", "Success")}</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
@@ -261,12 +278,12 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-semibold text-foreground/90">
-                Email
+                {t("auth.forgot.label.email", "Email")}
               </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your registered email"
+                placeholder={t("auth.forgot.placeholder.email", "Enter your registered email")}
                 value={formData.email}
                 onChange={(event) => {
                   const value = event.target.value
@@ -284,12 +301,19 @@ export default function ForgotPasswordPage() {
             {step !== "request" && (
               <div className="space-y-3">
                 <div className="space-y-2 text-center">
-                  <Label className="text-sm font-semibold text-foreground/90">Enter the 6-digit code</Label>
+                  <Label className="text-sm font-semibold text-foreground/90">
+                    {t("auth.forgot.label.otp", "Enter the 6-digit code")}
+                  </Label>
                   <OTPInput value={otpValue} onChange={setOtpValue} disabled={isLoading || step === "reset"} />
                 </div>
                 <div className="flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground sm:flex-row">
                   <span>
-                    {otpCountdown > 0 ? `You can request a new code in ${otpCountdown}s` : "Didn't receive the code?"}
+                    {otpCountdown > 0
+                      ? `${t("auth.forgot.otp.countdown_prefix", "You can request a new code in ")}${otpCountdown}${t(
+                          "auth.forgot.otp.countdown_suffix",
+                          "s",
+                        )}`
+                      : t("auth.forgot.otp.no_code", "Didn't receive the code?")}
                   </span>
                   <Button
                     type="button"
@@ -301,10 +325,10 @@ export default function ForgotPasswordPage() {
                   >
                     {isResending ? (
                       <>
-                        <RefreshCw className="mr-1 h-3 w-3 animate-spin" /> Sending...
+                        <RefreshCw className="mr-1 h-3 w-3 animate-spin" /> {t("auth.forgot.otp.sending", "Sending...")}
                       </>
                     ) : (
-                      "Resend code"
+                      t("auth.forgot.otp.resend", "Resend code")
                     )}
                   </Button>
                 </div>
@@ -315,11 +339,11 @@ export default function ForgotPasswordPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-semibold text-foreground/90">
-                    New Password
+                    {t("auth.forgot.label.new_password", "New Password")}
                   </Label>
                   <PasswordInput
                     id="password"
-                    placeholder="Enter new password"
+                    placeholder={t("auth.forgot.placeholder.new_password", "Enter new password")}
                     value={formData.password}
                     onChange={(event) => setFormData((prev) => ({ ...prev, password: event.target.value }))}
                     required
@@ -330,11 +354,11 @@ export default function ForgotPasswordPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-semibold text-foreground/90">
-                    Confirm Password
+                    {t("auth.forgot.label.confirm_password", "Confirm Password")}
                   </Label>
                   <PasswordInput
                     id="confirmPassword"
-                    placeholder="Re-enter new password"
+                    placeholder={t("auth.forgot.placeholder.confirm_password", "Re-enter new password")}
                     value={formData.confirmPassword}
                     onChange={(event) =>
                       setFormData((prev) => ({ ...prev, confirmPassword: event.target.value }))
@@ -349,30 +373,34 @@ export default function ForgotPasswordPage() {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <Button type="button" variant="outline" className="h-11 sm:w-auto" onClick={() => router.push("/auth/login")}>
-                Back to Login
+                {t("auth.forgot.back", "Back to Login")}
               </Button>
 
               <Button type="submit" className="h-11 flex-1 sm:flex-none shadow-lg shadow-primary/20" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {step === "request" ? "Sending Code..." : step === "verify" ? "Verifying..." : "Updating..."}
+                    {step === "request"
+                      ? t("auth.forgot.submitting", "Sending Code...")
+                      : step === "verify"
+                        ? t("auth.forgot.verifying", "Verifying...")
+                        : t("auth.forgot.updating", "Updating...")}
                   </>
                 ) : step === "request" ? (
-                  "Send Verification Code"
+                  t("auth.forgot.submit", "Send Verification Code")
                 ) : step === "verify" ? (
-                  "Verify Code"
+                  t("auth.forgot.submit_verify", "Verify Code")
                 ) : (
-                  "Reset Password"
+                  t("auth.forgot.submit_reset", "Reset Password")
                 )}
               </Button>
             </div>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            Remembered your password?{" "}
+            {t("auth.forgot.remembered", "Remembered your password?")}{" "}
             <Link href="/auth/login" className="font-semibold text-primary hover:underline">
-              Login here
+              {t("auth.forgot.login_here", "Login here")}
             </Link>
           </p>
         </div>

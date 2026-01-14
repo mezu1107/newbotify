@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Download, Filter, Loader2, TrendingDown, TrendingUp, DollarSign, Zap } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface Transaction {
   _id: string
@@ -29,6 +30,7 @@ interface TransactionSummary {
 }
 
 export default function TransactionsPage() {
+  const { t } = useI18n()
   const [user, setUser] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [summary, setSummary] = useState<TransactionSummary>({})
@@ -123,7 +125,13 @@ export default function TransactionsPage() {
 
   const exportTransactions = () => {
     const csvContent = [
-      ["Date", "Type", "Amount", "Status", "Description"].join(","),
+      [
+        t("transactions.export.date", "Date"),
+        t("transactions.export.type", "Type"),
+        t("transactions.export.amount", "Amount"),
+        t("transactions.export.status", "Status"),
+        t("transactions.export.description", "Description"),
+      ].join(","),
       ...transactions.map((transaction) =>
         [
           new Date(transaction.createdAt).toLocaleDateString(),
@@ -147,15 +155,15 @@ export default function TransactionsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary">Pending</Badge>
+        return <Badge variant="secondary">{t("transactions.status.pending", "Pending")}</Badge>
       case "approved":
         return (
           <Badge variant="default" className="bg-green-600">
-            Approved
+            {t("transactions.status.approved", "Approved")}
           </Badge>
         )
       case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>
+        return <Badge variant="destructive">{t("transactions.status.rejected", "Rejected")}</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -171,10 +179,11 @@ export default function TransactionsPage() {
       adjust: { color: "bg-gray-600", icon: DollarSign },
     }
     const { color, icon: Icon } = config[type as keyof typeof config] || config.adjust
+    const label = t(`transactions.type.${type}`, type)
     return (
       <Badge className={`${color} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
-        {type}
+        {label}
       </Badge>
     )
   }
@@ -204,26 +213,26 @@ export default function TransactionsPage() {
         <div className="w-full max-w-none p-6 md:p-6">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-balance">Transaction History</h1>
-              <p className="text-muted-foreground">View all your transactions and earnings</p>
+              <h1 className="text-3xl font-bold text-balance">{t("transactions.title", "Transaction History")}</h1>
+              <p className="text-muted-foreground">{t("transactions.subtitle", "View all your transactions and earnings")}</p>
             </div>
             <Button onClick={exportTransactions} variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              Export CSV
+              {t("transactions.export.cta", "Export CSV")}
             </Button>
           </div>
 
           <Tabs defaultValue="transactions" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="transactions">All Transactions</TabsTrigger>
-              <TabsTrigger value="summary">Summary</TabsTrigger>
+              <TabsTrigger value="transactions">{t("transactions.tabs.all", "All Transactions")}</TabsTrigger>
+              <TabsTrigger value="summary">{t("transactions.tabs.summary", "Summary")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="transactions" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Filter className="h-5 w-5" /> Filters
+                    <Filter className="h-5 w-5" /> {t("transactions.filters.title", "Filters")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -234,23 +243,23 @@ export default function TransactionsPage() {
                         onValueChange={(value) => setFilters((prev) => ({ ...prev, type: value }))}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Transaction type" />
+                          <SelectValue placeholder={t("transactions.filters.type_placeholder", "Transaction type")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="deposit">Deposits</SelectItem>
-                          <SelectItem value="withdraw">Withdrawals</SelectItem>
-                          <SelectItem value="earn">Mining Earnings</SelectItem>
-                          <SelectItem value="commission">Commissions</SelectItem>
-                          <SelectItem value="bonus">Bonuses</SelectItem>
-                          <SelectItem value="adjust">Adjustments</SelectItem>
+                          <SelectItem value="all">{t("transactions.filters.all", "All Types")}</SelectItem>
+                          <SelectItem value="deposit">{t("transactions.type.deposit", "Deposits")}</SelectItem>
+                          <SelectItem value="withdraw">{t("transactions.type.withdraw", "Withdrawals")}</SelectItem>
+                          <SelectItem value="earn">{t("transactions.type.earn", "Mining Earnings")}</SelectItem>
+                          <SelectItem value="commission">{t("transactions.type.commission", "Commissions")}</SelectItem>
+                          <SelectItem value="bonus">{t("transactions.type.bonus", "Bonuses")}</SelectItem>
+                          <SelectItem value="adjust">{t("transactions.type.adjust", "Adjustments")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Input
                         type="date"
-                        placeholder="From date"
+                        placeholder={t("transactions.filters.from_placeholder", "From date")}
                         value={filters.from}
                         onChange={(event) => setFilters((prev) => ({ ...prev, from: event.target.value }))}
                       />
@@ -258,14 +267,14 @@ export default function TransactionsPage() {
                     <div>
                       <Input
                         type="date"
-                        placeholder="To date"
+                        placeholder={t("transactions.filters.to_placeholder", "To date")}
                         value={filters.to}
                         onChange={(event) => setFilters((prev) => ({ ...prev, to: event.target.value }))}
                       />
                     </div>
                     <div>
                       <Button onClick={handleFilterChange} className="w-full">
-                        Apply Filters
+                        {t("transactions.filters.apply", "Apply Filters")}
                       </Button>
                     </div>
                   </div>
@@ -274,25 +283,25 @@ export default function TransactionsPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Transactions</CardTitle>
+                  <CardTitle>{t("transactions.recent.title", "Recent Transactions")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Details</TableHead>
+                          <TableHead>{t("transactions.table.date", "Date")}</TableHead>
+                          <TableHead>{t("transactions.table.type", "Type")}</TableHead>
+                          <TableHead>{t("transactions.table.amount", "Amount")}</TableHead>
+                          <TableHead>{t("transactions.table.status", "Status")}</TableHead>
+                          <TableHead>{t("transactions.table.details", "Details")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {transactions.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                              No transactions found for the selected filters.
+                              {t("transactions.empty", "No transactions found for the selected filters.")}
                             </TableCell>
                           </TableRow>
                         ) : (
@@ -316,14 +325,21 @@ export default function TransactionsPage() {
                               <TableCell>
                                 <div className="text-sm">
                                   {transaction.meta?.source && (
-                                    <div className="text-muted-foreground">Source: {transaction.meta.source}</div>
+                                    <div className="text-muted-foreground">
+                                      {t("transactions.details.source", "Source: ")}
+                                      {transaction.meta.source}
+                                    </div>
                                   )}
                                   {transaction.meta?.reason && (
-                                    <div className="text-muted-foreground">Reason: {transaction.meta.reason}</div>
+                                    <div className="text-muted-foreground">
+                                      {t("transactions.details.reason", "Reason: ")}
+                                      {transaction.meta.reason}
+                                    </div>
                                   )}
                                   {typeof transaction.meta?.profitPct === "number" && (
                                     <div className="text-green-600">
-                                      Profit: {transaction.meta.profitPct.toFixed(2)}%
+                                      {t("transactions.details.profit", "Profit: ")}
+                                      {transaction.meta.profitPct.toFixed(2)}%
                                     </div>
                                   )}
                                 </div>
@@ -340,10 +356,10 @@ export default function TransactionsPage() {
                       <Button onClick={handleLoadMore} disabled={loadingMore} variant="outline">
                         {loadingMore ? (
                           <span className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" /> Loading more
+                            <Loader2 className="h-4 w-4 animate-spin" /> {t("transactions.loading_more", "Loading more")}
                           </span>
                         ) : (
-                          "Load more"
+                          t("transactions.load_more", "Load more")
                         )}
                       </Button>
                     </div>
@@ -357,19 +373,24 @@ export default function TransactionsPage() {
                 {Object.keys(summary).length === 0 ? (
                   <Card>
                     <CardContent className="py-10 text-center text-muted-foreground">
-                      No summary available for the selected filters.
+                      {t("transactions.summary.empty", "No summary available for the selected filters.")}
                     </CardContent>
                   </Card>
                 ) : (
                   Object.entries(summary).map(([type, data]) => (
                     <Card key={type}>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium capitalize">{type}s</CardTitle>
+                        <CardTitle className="text-sm font-medium capitalize">
+                          {t("transactions.summary.type_label", "{{type}}s").replace("{{type}}", t(`transactions.type.${type}`, type))}
+                        </CardTitle>
                         {getTypeBadge(type)}
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">${data.total.toFixed(2)}</div>
-                        <p className="text-xs text-muted-foreground">{data.count} transactions</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("transactions.summary.count_prefix", "")}
+                          {data.count} {t("transactions.summary.count_suffix", "transactions")}
+                        </p>
                       </CardContent>
                     </Card>
                   ))

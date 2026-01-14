@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/utils/formatting"
 import { ensureDate, ensureNumber } from "@/lib/utils/safe-parsing"
 import { Trophy, Users, Target } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 type OverrideKind = "daily_override" | "team_commission" | "team_reward"
 
@@ -105,6 +106,7 @@ export function LevelProgress({
   lastLevelUpAt,
   message,
 }: LevelProgressProps) {
+  const { t } = useI18n()
   const safeCurrentLevel = ensureNumber(currentLevel, 0)
   const safeLevelProgress = useMemo(() => {
     if (levelProgress && typeof levelProgress === "object") {
@@ -141,7 +143,7 @@ export function LevelProgress({
     () =>
       typeof message === "string" && message.trim().length > 0
         ? message
-        : "Keep engaging your team to unlock the next level.",
+        : t("team.levels.message_default", "Keep engaging your team to unlock the next level."),
     [message],
   )
 
@@ -214,24 +216,24 @@ export function LevelProgress({
             : "ring-1 ring-transparent",
         )}
       >
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-amber-600" />
-            Current Level Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold">Level {safeCurrentLevel}</span>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-600" />
+              {t("team.levels.current_title", "Current Level Status")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold">{t("team.levels.level_label", "Level")} {safeCurrentLevel}</span>
             <Badge variant={safeCurrentLevel > 0 ? "default" : "secondary"} className="text-lg px-3 py-1">
-              {safeCurrentLevel === 0 ? "Starter" : `Level ${safeCurrentLevel}`}
+              {safeCurrentLevel === 0 ? t("team.levels.starter", "Starter") : `${t("team.levels.level_label", "Level")} ${safeCurrentLevel}`}
             </Badge>
           </div>
 
           {currentRule && (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Direct Commission:</span>
+                <span className="text-muted-foreground">{t("team.levels.direct_commission", "Direct Commission:")}</span>
               <span className="font-medium ">
   15%
 </span>
@@ -240,23 +242,23 @@ export function LevelProgress({
               {currentOverrides.map((summary) => (
                 <div key={`${summary.kind}-${summary.pct}`} className="flex justify-between">
                   <span className="text-muted-foreground">
-                    {overrideKindLabels[summary.kind]}:
+                    {t(`team.levels.override.${summary.kind}`, overrideKindLabels[summary.kind])}:
                   </span>
                   <span className="font-medium">
                     {summary.pct}% ({summary.teams.join(", ")})
                   </span>
                 </div>
               ))}
-              {currentOverrides.length === 0 && Number.isFinite(currentTeamRewardPct) && currentTeamRewardPct > 0 && (
+            {currentOverrides.length === 0 && Number.isFinite(currentTeamRewardPct) && currentTeamRewardPct > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Team Reward:</span>
+                  <span className="text-muted-foreground">{t("team.levels.team_reward", "Team Reward:")}</span>
                   <span className="font-medium">{currentTeamRewardPct}%</span>
                 </div>
               )}
             </div>
           )}
 
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div
               className={cn(
                 "rounded-lg border bg-muted/40 p-3 transition-all duration-500",
@@ -265,20 +267,20 @@ export function LevelProgress({
                   : "",
               )}
             >
-              <p className="text-muted-foreground">Direct active referrals (current cycle)</p>
+              <p className="text-muted-foreground">{t("team.levels.direct_active", "Direct active referrals (current cycle)")}</p>
               <p className="text-lg font-semibold">
                 {safeDirectActiveCount}
                 {safeLevelProgress ? ` / ${safeLevelProgress.requiredActive}` : ""}
               </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-3">
-              <p className="text-muted-foreground">Total qualified direct referrals</p>
+              <p className="text-muted-foreground">{t("team.levels.total_direct", "Total qualified direct referrals")}</p>
               <p className="text-lg font-semibold">{safeTotalActiveDirects}</p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-3 sm:col-span-2">
-              <p className="text-muted-foreground">Last level up</p>
+              <p className="text-muted-foreground">{t("team.levels.last_level_up", "Last level up")}</p>
               <p className="text-lg font-semibold">
-                {lastLevelUpDate ? lastLevelUpDate.toLocaleString() : "No level ups yet"}
+                {lastLevelUpDate ? lastLevelUpDate.toLocaleString() : t("team.levels.no_level_ups", "No level ups yet")}
               </p>
             </div>
           </div>
@@ -291,14 +293,14 @@ export function LevelProgress({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-blue-600" />
-              Next Level Progress
+              {t("team.levels.next_title", "Next Level Progress")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Level {safeLevelProgress.nextLevel}</span>
+              <span className="text-lg font-semibold">{t("team.levels.level_label", "Level")} {safeLevelProgress.nextLevel}</span>
               <span className="text-sm text-muted-foreground">
-                {safeLevelProgress.currentActive} / {safeLevelProgress.requiredActive} Active Members
+                {safeLevelProgress.currentActive} / {safeLevelProgress.requiredActive} {t("team.levels.active_members", "Active Members")}
               </span>
             </div>
 
@@ -306,11 +308,11 @@ export function LevelProgress({
 
             <div className="text-sm text-center text-muted-foreground">
               {safeLevelProgress.progress >= 100 ? (
-                <span className="text-green-600 font-medium">Requirements met! Level will update soon.</span>
+                <span className="text-green-600 font-medium">{t("team.levels.requirements_met", "Requirements met! Level will update soon.")}</span>
               ) : (
                 <span>
-                  {Math.max(safeLevelProgress.requiredActive - safeLevelProgress.currentActive, 0)} more active members
-                  needed
+                  {Math.max(safeLevelProgress.requiredActive - safeLevelProgress.currentActive, 0)}{" "}
+                  {t("team.levels.members_needed", "more active members needed")}
                 </span>
               )}
             </div>
@@ -321,10 +323,12 @@ export function LevelProgress({
 
             {nextRule && (
               <div className="space-y-2 text-sm border-t pt-3">
-                <h4 className="font-medium">Level {safeLevelProgress.nextLevel} Benefits:</h4>
+                <h4 className="font-medium">
+                  {t("team.levels.benefits_prefix", "Level")} {safeLevelProgress.nextLevel} {t("team.levels.benefits_suffix", "Benefits:")}
+                </h4>
                 <div className="space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Direct Commission:</span>
+                    <span className="text-muted-foreground">{t("team.levels.direct_commission", "Direct Commission:")}</span>
                    <span className="font-medium text-green-600">
   15%
 </span>
@@ -333,7 +337,7 @@ export function LevelProgress({
                   {nextOverrides.map((summary) => (
                     <div key={`${summary.kind}-${summary.pct}`} className="flex justify-between">
                       <span className="text-muted-foreground">
-                        {overrideKindLabels[summary.kind]}:
+                        {t(`team.levels.override.${summary.kind}`, overrideKindLabels[summary.kind])}:
                       </span>
                       <span className="font-medium text-green-600">
                         {summary.pct}% ({summary.teams.join(", ")})
@@ -342,13 +346,13 @@ export function LevelProgress({
                   ))}
                   {Number.isFinite(monthlyBonus) && monthlyBonus > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Monthly Bonus:</span>
+                      <span className="text-muted-foreground">{t("team.levels.monthly_bonus", "Monthly Bonus:")}</span>
                       <span className="font-medium text-green-600">{formatCurrency(monthlyBonus)}</span>
                     </div>
                   )}
                   {Number.isFinite(monthlySalary) && monthlySalary > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Monthly Salary:</span>
+                      <span className="text-muted-foreground">{t("team.levels.monthly_salary", "Monthly Salary:")}</span>
                       <span className="font-medium text-green-600">{formatCurrency(monthlySalary)}</span>
                     </div>
                   )}
@@ -364,26 +368,26 @@ export function LevelProgress({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-purple-600" />
-            Team Statistics
+            {t("team.levels.stats_title", "Team Statistics")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-blue-600">{safeTeamStats.totalMembers}</div>
-              <div className="text-sm text-muted-foreground">Total Members</div>
+              <div className="text-sm text-muted-foreground">{t("team.levels.stats.total_members", "Total Members")}</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-green-600">{safeTeamStats.activeMembers}</div>
-              <div className="text-sm text-muted-foreground">Active Members</div>
+              <div className="text-sm text-muted-foreground">{t("team.levels.stats.active_members", "Active Members")}</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-purple-600">{safeTeamStats.directReferrals}</div>
-              <div className="text-sm text-muted-foreground">Direct Referrals</div>
+              <div className="text-sm text-muted-foreground">{t("team.levels.stats.direct_referrals", "Direct Referrals")}</div>
             </div>
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-2xl font-bold text-amber-600">{formatCurrency(safeTeamStats.totalTeamDeposits)}</div>
-              <div className="text-sm text-muted-foreground">Team Deposits</div>
+              <div className="text-sm text-muted-foreground">{t("team.levels.stats.team_deposits", "Team Deposits")}</div>
             </div>
           </div>
         </CardContent>

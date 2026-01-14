@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface TeamHierarchyMember {
   _id?: string
@@ -115,6 +116,7 @@ interface MemberNodeProps {
 }
 
 const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberNodeProps) {
+  const { t } = useI18n()
   if (!member || depth >= maxDepth) {
     return null
   }
@@ -123,7 +125,7 @@ const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberN
   const levelValue = typeof member.level === "number" && Number.isFinite(member.level) ? member.level : null
   const directCount = typeof member.directCount === "number" ? member.directCount : 0
   const activeCount = typeof member.activeCount === "number" ? member.activeCount : 0
-  const progressionLabel = getProgressLabel(member)
+  const progressionLabel = t(`team.hierarchy.progress.${member.qualified ? "qualified" : member.isActive ? "active" : "progressing"}`, getProgressLabel(member))
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -144,7 +146,7 @@ const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberN
           )}
         >
           {member.profileAvatar ? (
-            <AvatarImage src={member.profileAvatar} alt={member.name ?? member.email ?? "Team member"} />
+            <AvatarImage src={member.profileAvatar} alt={member.name ?? member.email ?? t("team.hierarchy.member_alt", "Team member")} />
           ) : null}
           <AvatarFallback className="text-base font-semibold uppercase">
             {getInitials(member.name, member.email)}
@@ -152,17 +154,19 @@ const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberN
         </Avatar>
 
         <div className="relative space-y-1">
-          <h3 className="text-base font-semibold text-white">{member.name ?? "Unnamed member"}</h3>
-          <p className="text-xs text-slate-300">{member.email ?? "Email unavailable"}</p>
+          <h3 className="text-base font-semibold text-white">
+            {member.name ?? t("team.hierarchy.member_unnamed", "Unnamed member")}
+          </h3>
+          <p className="text-xs text-slate-300">{member.email ?? t("team.hierarchy.email_unavailable", "Email unavailable")}</p>
         </div>
 
         <div className="relative flex flex-wrap items-center justify-center gap-2">
           <Badge variant="secondary" className={cn("border-none", styles.badge)}>
-            {getRoleLabel(depth)}
+            {t(`team.hierarchy.role.${depth}`, getRoleLabel(depth))}
           </Badge>
           {levelValue !== null ? (
             <Badge variant="outline" className="border-white/30 text-white">
-              Level {levelValue}
+              {t("team.hierarchy.level", "Level")} {levelValue}
             </Badge>
           ) : null}
           <Badge
@@ -181,26 +185,27 @@ const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberN
 
         <div className="relative grid w-full grid-cols-2 gap-3 text-xs">
           <div className="rounded-lg border border-white/10 bg-slate-950/50 p-3">
-            <p className="text-slate-400">Team deposits</p>
+            <p className="text-slate-400">{t("team.hierarchy.team_deposits", "Team deposits")}</p>
             <p className="font-semibold text-white">{formatCurrency(member.depositTotal ?? null)}</p>
           </div>
           <div className="rounded-lg border border-white/10 bg-slate-950/50 p-3">
-            <p className="text-slate-400">Direct referrals</p>
+            <p className="text-slate-400">{t("team.hierarchy.direct_referrals", "Direct referrals")}</p>
             <p className="font-semibold text-white">{directCount}</p>
           </div>
           <div className="rounded-lg border border-white/10 bg-slate-950/50 p-3">
-            <p className="text-slate-400">Active referrals</p>
+            <p className="text-slate-400">{t("team.hierarchy.active_referrals", "Active referrals")}</p>
             <p className="font-semibold text-emerald-200">{activeCount}</p>
           </div>
           <div className="rounded-lg border border-white/10 bg-slate-950/50 p-3">
-            <p className="text-slate-400">Joined</p>
+            <p className="text-slate-400">{t("team.hierarchy.joined", "Joined")}</p>
             <p className="font-semibold text-white">{formatDate(member.createdAt)}</p>
           </div>
         </div>
 
         {member.referralCode ? (
           <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-            Code: <span className="text-foreground">{member.referralCode}</span>
+            {t("team.hierarchy.code", "Code: ")}
+            <span className="text-foreground">{member.referralCode}</span>
           </p>
         ) : null}
       </div>
@@ -226,6 +231,7 @@ const MemberNode = memo(function MemberNode({ member, depth, maxDepth }: MemberN
 MemberNode.displayName = "MemberNode"
 
 export function TeamHierarchyChart({ teamTree, teamStats, maxDepth = 4 }: TeamHierarchyChartProps) {
+  const { t } = useI18n()
   const flattenedLevels = useMemo(() => {
     const levels: number[] = []
 
@@ -252,21 +258,24 @@ export function TeamHierarchyChart({ teamTree, teamStats, maxDepth = 4 }: TeamHi
     <Card className="overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950/40 shadow-2xl shadow-emerald-500/15">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,0.12),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.12),transparent_40%)]" />
       <CardHeader className="relative space-y-2">
-        <CardTitle className="text-xl font-semibold text-white">Team hierarchy</CardTitle>
+        <CardTitle className="text-xl font-semibold text-white">{t("team.hierarchy.title", "Team hierarchy")}</CardTitle>
         <p className="text-sm text-slate-300">
-          Visualize how your team is structured and track how members progress across levels.
+          {t("team.hierarchy.subtitle", "Visualize how your team is structured and track how members progress across levels.")}
         </p>
 
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <Badge variant="secondary" className="border border-emerald-400/40 bg-emerald-500/15 text-emerald-50">
-            Levels visible: {flattenedLevels.length}
+            {t("team.hierarchy.levels_visible", "Levels visible: ")}
+            {flattenedLevels.length}
           </Badge>
           <Badge variant="secondary" className="border border-cyan-400/40 bg-cyan-500/15 text-cyan-50">
-            Members mapped: {totalMembers}
+            {t("team.hierarchy.members_mapped", "Members mapped: ")}
+            {totalMembers}
           </Badge>
           {typeof activeMembers === "number" ? (
             <Badge variant="secondary" className="border border-amber-300/50 bg-amber-400/15 text-amber-50">
-              Active: {activeMembers}
+              {t("team.hierarchy.active", "Active: ")}
+              {activeMembers}
             </Badge>
           ) : null}
         </div>
