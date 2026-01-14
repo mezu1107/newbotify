@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useI18n } from "@/lib/i18n/provider"
 
 import type { SerializableUser } from "@/lib/serializers/user"
 import { PROFILE_AVATAR_OPTIONS } from "@/lib/constants/avatars"
@@ -67,6 +68,7 @@ const usd = (v: unknown) => `$${toNumber(v).toFixed(2)}`
 
 export default function ProfilePage() {
   const router = useRouter()
+  const { t } = useI18n()
 
   const [user, setUser] = useState<SerializableUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -120,7 +122,7 @@ export default function ProfilePage() {
       try {
         const userRes = await fetch("/api/auth/me")
         if (!userRes.ok) {
-          setGlobalError("Failed to load user data")
+          setGlobalError(t("profile.error.load", "Failed to load user data"))
           return
         }
         const response = await userRes.json()
@@ -128,11 +130,11 @@ export default function ProfilePage() {
         if (fetchedUser) {
           syncUserState(fetchedUser)
         } else {
-          setGlobalError("Failed to load user data")
+          setGlobalError(t("profile.error.load", "Failed to load user data"))
         }
       } catch (error) {
         console.error("Failed to fetch data:", error)
-        setGlobalError("Failed to load user data")
+        setGlobalError(t("profile.error.load", "Failed to load user data"))
       } finally {
         setLoading(false)
       }
@@ -140,10 +142,10 @@ export default function ProfilePage() {
 
     fetchData().catch((error) => {
       console.error("Unexpected fetch error:", error)
-      setGlobalError("Failed to load user data")
+      setGlobalError(t("profile.error.load", "Failed to load user data"))
       setLoading(false)
     })
-  }, [])
+  }, [t])
 
   const handleProfileUpdate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -162,13 +164,13 @@ export default function ProfilePage() {
       })
 
       const data = await response.json()
-      if (!response.ok) throw new Error(data.message || data.error || "Failed to update profile")
+      if (!response.ok) throw new Error(data.message || data.error || t("profile.error.update", "Failed to update profile"))
       if (data.user) syncUserState(data.user as SerializableUser)
 
-      setProfileStatus({ success: data.message || "Profile updated successfully." })
+      setProfileStatus({ success: data.message || t("profile.success.update", "Profile updated successfully.") })
       setVerificationStatus({})
     } catch (error: any) {
-      const message = typeof error?.message === "string" ? error.message : "Failed to update profile"
+      const message = typeof error?.message === "string" ? error.message : t("profile.error.update", "Failed to update profile")
       setProfileStatus({ error: message })
     } finally {
       setProfileLoading(false)
@@ -179,12 +181,14 @@ export default function ProfilePage() {
     setVerificationStatus({})
     setGlobalError("")
 
-    setVerificationStatus({ error: "Phone verification is disabled. Email login is already active." })
+    setVerificationStatus({
+      error: t("profile.verify.disabled", "Phone verification is disabled. Email login is already active."),
+    })
   }
 
   const handleSendPasswordOtp = async () => {
     if (!profileData.email) {
-      setOtpStatus({ error: "Add an email address to your profile before requesting a code" })
+      setOtpStatus({ error: t("profile.otp.missing_email", "Add an email address to your profile before requesting a code") })
       return
     }
 
@@ -199,13 +203,13 @@ export default function ProfilePage() {
       const { data, fallbackText } = await parseJsonSafe(response)
 
       if (!response.ok) {
-        throw new Error(extractMessage(data, fallbackText, "Failed to send verification code"))
+        throw new Error(extractMessage(data, fallbackText, t("profile.otp.error", "Failed to send verification code")))
       }
       setOtpStatus({
-        success: formatOTPSuccessMessage(data as OTPSuccessPayload, "Verification code sent"),
+        success: formatOTPSuccessMessage(data as OTPSuccessPayload, t("profile.otp.sent", "Verification code sent")),
       })
     } catch (error: any) {
-      const message = typeof error?.message === "string" ? error.message : "Failed to send verification code"
+      const message = typeof error?.message === "string" ? error.message : t("profile.otp.error", "Failed to send verification code")
       setOtpStatus({ error: message })
     } finally {
       setOtpLoading(false)
@@ -216,11 +220,11 @@ export default function ProfilePage() {
     event.preventDefault()
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordStatus({ error: "New passwords do not match" })
+      setPasswordStatus({ error: t("profile.password.mismatch", "New passwords do not match") })
       return
     }
     if (!passwordData.otpCode) {
-      setPasswordStatus({ error: "Enter the 6-digit verification code we emailed you" })
+      setPasswordStatus({ error: t("profile.password.otp_required", "Enter the 6-digit verification code we emailed you") })
       return
     }
 
@@ -241,13 +245,13 @@ export default function ProfilePage() {
       })
 
       const { data, fallbackText } = await parseJsonSafe(response)
-      const message = extractMessage(data, fallbackText, "Failed to update password")
+      const message = extractMessage(data, fallbackText, t("profile.password.error", "Failed to update password"))
       if (!response.ok) throw new Error(message)
 
-      setPasswordStatus({ success: message || "Password updated successfully." })
+      setPasswordStatus({ success: message || t("profile.password.success", "Password updated successfully.") })
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "", otpCode: "" })
     } catch (error: any) {
-      const message = typeof error?.message === "string" ? error.message : "Failed to update password"
+      const message = typeof error?.message === "string" ? error.message : t("profile.password.error", "Failed to update password")
       setPasswordStatus({ error: message })
     } finally {
       setPasswordLoading(false)
@@ -263,7 +267,7 @@ export default function ProfilePage() {
 
   const copyReferralLink = async () => {
     if (!user?.referralCode) {
-      setGlobalError("No referral code available")
+      setGlobalError(t("profile.referral.error.missing_code", "No referral code available"))
       return
     }
 
@@ -279,7 +283,7 @@ export default function ProfilePage() {
       router.push(referralLink)
     } catch (error) {
       console.error("Error generating/copying referral link:", error)
-      setGlobalError("Failed to copy or open the referral link")
+      setGlobalError(t("profile.referral.error.copy_link", "Failed to copy or open the referral link"))
     } finally {
       setIsGeneratingLink(false)
     }
@@ -292,16 +296,16 @@ export default function ProfilePage() {
         setCopied(true)
       } catch (error) {
         console.error("Failed to copy referral code:", error)
-        setGlobalError("Failed to copy referral code")
+        setGlobalError(t("profile.referral.error.copy_code", "Failed to copy referral code"))
       }
     } else {
-      setGlobalError("No referral code available")
+      setGlobalError(t("profile.referral.error.missing_code", "No referral code available"))
     }
   }
 
   const verificationFlags = [
-    { label: "Email verified", active: Boolean(user?.emailVerified) },
-    { label: "Account active", active: isActiveAccount },
+    { label: t("profile.badge.email_verified", "Email verified"), active: Boolean(user?.emailVerified) },
+    { label: t("profile.badge.account_active", "Account active"), active: isActiveAccount },
   ]
 
   if (loading) {
@@ -324,10 +328,10 @@ export default function ProfilePage() {
                 <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-emerald-400/30 bg-slate-950">
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-emerald-200">Profile</p>
-                  <h1 className="text-2xl font-semibold text-white">{user?.name || "Account owner"}</h1>
+                  <p className="text-xs uppercase tracking-[0.28em] text-emerald-200">{t("profile.header.kicker", "Profile")}</p>
+                  <h1 className="text-2xl font-semibold text-white">{user?.name || t("profile.header.owner", "Account owner")}</h1>
                   <p className="text-sm text-emerald-100/80">
-                    Tier {toNumber(user?.level, 0)} | {isActiveAccount ? "Active" : "Inactive"}
+                    {t("profile.header.tier", "Tier")} {toNumber(user?.level, 0)} | {isActiveAccount ? t("profile.status.active", "Active") : t("profile.status.inactive", "Inactive")}
                   </p>
                 </div>
               </div>
@@ -348,23 +352,25 @@ export default function ProfilePage() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 p-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Deposits</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("profile.stats.deposits", "Deposits")}</p>
                 <p className="mt-2 text-xl font-semibold text-white">{usd(user?.depositTotal)}</p>
                 <p className="text-xs text-slate-500">
-                  {remainingToActivate > 0 ? `${usd(remainingToActivate)} to reach activation threshold` : "Activation threshold met"}
+                  {remainingToActivate > 0
+                    ? `${usd(remainingToActivate)} ${t("profile.stats.activation_needed", "to reach activation threshold")}`
+                    : t("profile.stats.activation_met", "Activation threshold met")}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 p-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Withdrawn</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("profile.stats.withdrawn", "Withdrawn")}</p>
                 <p className="mt-2 text-xl font-semibold text-white">{usd(user?.withdrawTotal)}</p>
-                <p className="text-xs text-slate-500">Total processed withdrawals</p>
+                <p className="text-xs text-slate-500">{t("profile.stats.withdrawn_sub", "Total processed withdrawals")}</p>
               </div>
 
               <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 p-3">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Earnings</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{t("profile.stats.earnings", "Earnings")}</p>
                 <p className="mt-2 text-xl font-semibold text-white">{usd(user?.roiEarnedTotal)}</p>
-                <p className="text-xs text-slate-500">Lifetime rewards earned</p>
+                <p className="text-xs text-slate-500">{t("profile.stats.earnings_sub", "Lifetime rewards earned")}</p>
               </div>
             </div>
           </header>
@@ -377,9 +383,9 @@ export default function ProfilePage() {
 
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-slate-900/60">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="referral">Referral</TabsTrigger>
+              <TabsTrigger value="profile">{t("profile.tabs.profile", "Profile")}</TabsTrigger>
+              <TabsTrigger value="security">{t("profile.tabs.security", "Security")}</TabsTrigger>
+              <TabsTrigger value="referral">{t("profile.tabs.referral", "Referral")}</TabsTrigger>
             </TabsList>
 
             {/* âœ… FIXED PROFILE TAB */}
@@ -388,8 +394,8 @@ export default function ProfilePage() {
                 {/* LEFT */}
                 <Card className="border-slate-800/70 bg-slate-900/70">
                   <CardHeader>
-                    <CardTitle>Profile details</CardTitle>
-                    <CardDescription>Update your display name, phone, and avatar.</CardDescription>
+                    <CardTitle>{t("profile.details.title", "Profile details")}</CardTitle>
+                    <CardDescription>{t("profile.details.subtitle", "Update your display name, phone, and avatar.")}</CardDescription>
                   </CardHeader>
 
                   <CardContent>
@@ -408,7 +414,7 @@ export default function ProfilePage() {
                     <form onSubmit={handleProfileUpdate} className="space-y-4">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="name">Full name</Label>
+                          <Label htmlFor="name">{t("profile.details.name", "Full name")}</Label>
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground" />
                             <Input
@@ -425,16 +431,16 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Email</Label>
+                        <Label>{t("profile.details.email", "Email")}</Label>
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-muted-foreground" />
                           <Input value={profileData.email} readOnly />
-                          {user?.emailVerified && <Badge variant="secondary">Verified</Badge>}
+                          {user?.emailVerified && <Badge variant="secondary">{t("profile.status.verified", "Verified")}</Badge>}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Avatar</Label>
+                        <Label>{t("profile.details.avatar", "Avatar")}</Label>
                         <RadioGroup
                           value={profileData.avatar}
                           onValueChange={(value) =>
@@ -461,10 +467,10 @@ export default function ProfilePage() {
                           {profileLoading ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Saving...
+                              {t("profile.details.saving", "Saving...")}
                             </>
                           ) : (
-                            "Save changes"
+                            t("profile.details.save", "Save changes")
                           )}
                         </Button>
 
@@ -477,10 +483,10 @@ export default function ProfilePage() {
                           {verifyLoading ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Verifying...
+                              {t("profile.details.verifying", "Verifying...")}
                             </>
                           ) : (
-                            "Verify profile"
+                            t("profile.details.verify", "Verify profile")
                           )}
                         </Button>
                       </div>
@@ -503,20 +509,28 @@ export default function ProfilePage() {
                 {/* RIGHT */}
                 <Card className="border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-cyan-500/5 to-slate-900/80">
                   <CardHeader>
-                    <CardTitle>Account health</CardTitle>
-                    <CardDescription>Keep your account in good standing.</CardDescription>
+                    <CardTitle>{t("profile.health.title", "Account health")}</CardTitle>
+                    <CardDescription>{t("profile.health.subtitle", "Keep your account in good standing.")}</CardDescription>
                   </CardHeader>
 
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/80 px-3 py-2">
                       <div>
-                        <p className="text-sm font-semibold text-white">Status</p>
+                        <p className="text-sm font-semibold text-white">{t("profile.health.status_label", "Status")}</p>
                         <p className="text-xs text-slate-400">
-                          {isBlocked ? "Account blocked" : isActiveAccount ? "Active" : "Inactive"}
+                          {isBlocked
+                            ? t("profile.status.blocked_account", "Account blocked")
+                            : isActiveAccount
+                              ? t("profile.status.active", "Active")
+                              : t("profile.status.inactive", "Inactive")}
                         </p>
                       </div>
                       <Badge variant={isBlocked ? "destructive" : "default"}>
-                        {isBlocked ? "Blocked" : isActiveAccount ? "Active" : "Inactive"}
+                        {isBlocked
+                          ? t("profile.status.blocked", "Blocked")
+                          : isActiveAccount
+                            ? t("profile.status.active", "Active")
+                            : t("profile.status.inactive", "Inactive")}
                       </Badge>
                     </div>
 
@@ -524,11 +538,11 @@ export default function ProfilePage() {
 
                     <div className="flex items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/80 px-3 py-2">
                       <div>
-                        <p className="text-sm font-semibold text-white">Email</p>
+                        <p className="text-sm font-semibold text-white">{t("profile.details.email", "Email")}</p>
                         <p className="text-xs text-slate-400">{profileData.email}</p>
                       </div>
                       <Badge variant={user?.emailVerified ? "default" : "outline"}>
-                        {user?.emailVerified ? "Verified" : "Unverified"}
+                        {user?.emailVerified ? t("profile.status.verified", "Verified") : t("profile.status.unverified", "Unverified")}
                       </Badge>
                     </div>
                   </CardContent>
@@ -539,8 +553,8 @@ export default function ProfilePage() {
             <TabsContent value="security" className="mt-6">
               <Card className="border-slate-800/70 bg-slate-900/70">
                 <CardHeader>
-                  <CardTitle>Password & verification</CardTitle>
-                  <CardDescription>Secure your account with a new password and email code.</CardDescription>
+                  <CardTitle>{t("profile.security.title", "Password & verification")}</CardTitle>
+                  <CardDescription>{t("profile.security.subtitle", "Secure your account with a new password and email code.")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {otpStatus.error && (
@@ -568,7 +582,7 @@ export default function ProfilePage() {
 
                   <form onSubmit={handlePasswordUpdate} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current password</Label>
+                      <Label htmlFor="currentPassword">{t("profile.security.current_password", "Current password")}</Label>
                       <PasswordInput
                         id="currentPassword"
                         value={passwordData.currentPassword}
@@ -581,7 +595,7 @@ export default function ProfilePage() {
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="newPassword">New password</Label>
+                        <Label htmlFor="newPassword">{t("profile.security.new_password", "New password")}</Label>
                         <PasswordInput
                           id="newPassword"
                           value={passwordData.newPassword}
@@ -592,7 +606,7 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm new password</Label>
+                        <Label htmlFor="confirmPassword">{t("profile.security.confirm_password", "Confirm new password")}</Label>
                         <PasswordInput
                           id="confirmPassword"
                           value={passwordData.confirmPassword}
@@ -606,11 +620,11 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <Label htmlFor="otpCode">Email verification code</Label>
+                        <Label htmlFor="otpCode">{t("profile.security.otp_label", "Email verification code")}</Label>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>Need help?</span>
+                          <span>{t("profile.security.help", "Need help?")}</span>
                           <Link href="/auth/forgot" className="text-primary hover:underline">
-                            Forgot password
+                            {t("profile.security.forgot", "Forgot password")}
                           </Link>
                         </div>
                         <Button
@@ -623,10 +637,10 @@ export default function ProfilePage() {
                           {otpLoading ? (
                             <>
                               <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                              Sending
+                              {t("profile.security.sending", "Sending")}
                             </>
                           ) : (
-                            "Send code"
+                            t("profile.security.send_code", "Send code")
                           )}
                         </Button>
                       </div>
@@ -636,7 +650,7 @@ export default function ProfilePage() {
                         inputMode="numeric"
                         pattern="^\\d{6}$"
                         maxLength={6}
-                        placeholder="123456"
+                        placeholder={t("profile.security.otp_placeholder", "123456")}
                         value={passwordData.otpCode}
                         onChange={(event) =>
                           setPasswordData((prev) => ({
@@ -647,7 +661,7 @@ export default function ProfilePage() {
                         required
                       />
                       <p className="text-xs text-muted-foreground">
-                        We will email a 6-digit code to confirm this change.
+                        {t("profile.security.otp_help", "We will email a 6-digit code to confirm this change.")}
                       </p>
                     </div>
 
@@ -655,12 +669,12 @@ export default function ProfilePage() {
                       {passwordLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
+                          {t("profile.security.updating", "Updating...")}
                         </>
                       ) : (
                         <>
                           <Key className="mr-2 h-4 w-4" />
-                          Update password
+                          {t("profile.security.update_password", "Update password")}
                         </>
                       )}
                     </Button>
@@ -673,47 +687,47 @@ export default function ProfilePage() {
               <div className="grid gap-4 lg:grid-cols-[1.1fr,1fr]">
                 <Card className="border-slate-800/70 bg-slate-900/70">
                   <CardHeader>
-                    <CardTitle>Share & invite</CardTitle>
-                    <CardDescription>Share your referral code to earn together.</CardDescription>
+                    <CardTitle>{t("profile.referral.title", "Share & invite")}</CardTitle>
+                    <CardDescription>{t("profile.referral.subtitle", "Share your referral code to earn together.")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Referral code</Label>
+                      <Label>{t("profile.referral.code_label", "Referral code")}</Label>
                       <div className="flex gap-2">
                         <Input value={user?.referralCode || ""} readOnly className="font-mono" />
                         <Button variant="outline" onClick={copyReferralCode} disabled={!user?.referralCode}>
                           <Copy className="mr-2 h-4 w-4" />
-                          Copy
+                          {t("profile.referral.copy", "Copy")}
                         </Button>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Referral link</Label>
+                      <Label>{t("profile.referral.link_label", "Referral link")}</Label>
                       <div className="flex gap-2">
                         <Button onClick={copyReferralLink} disabled={!user?.referralCode || isGeneratingLink}>
                           {isGeneratingLink ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Generating...
+                              {t("profile.referral.generating", "Generating...")}
                             </>
                           ) : (
                             <>
                               <Sparkles className="mr-2 h-4 w-4" />
-                              Copy & open signup link
+                              {t("profile.referral.copy_link", "Copy & open signup link")}
                             </>
                           )}
                         </Button>
-                        {copied && <Badge variant="secondary">Copied</Badge>}
+                        {copied && <Badge variant="secondary">{t("profile.referral.copied", "Copied")}</Badge>}
                       </div>
                     </div>
 
                     <div className="rounded-xl border border-slate-800/70 bg-slate-950/70 p-4">
-                      <p className="text-sm font-semibold text-white">Tips to boost referrals</p>
+                      <p className="text-sm font-semibold text-white">{t("profile.referral.tips.title", "Tips to boost referrals")}</p>
                       <ul className="mt-2 space-y-2 text-xs text-slate-400">
-                        <li>Share with context: explain the daily profit mission and rewards.</li>
-                        <li>Highlight activation thresholds and payout timelines.</li>
-                        <li>Remind friends to verify email for smoother rewards.</li>
+                        <li>{t("profile.referral.tips.one", "Share with context: explain the daily profit mission and rewards.")}</li>
+                        <li>{t("profile.referral.tips.two", "Highlight activation thresholds and payout timelines.")}</li>
+                        <li>{t("profile.referral.tips.three", "Remind friends to verify email for smoother rewards.")}</li>
                       </ul>
                     </div>
                   </CardContent>
@@ -721,19 +735,19 @@ export default function ProfilePage() {
 
                 <Card className="border-slate-800/70 bg-gradient-to-br from-slate-900/90 via-slate-900 to-emerald-900/30">
                   <CardHeader>
-                    <CardTitle>Identity check</CardTitle>
-                    <CardDescription>Keep your account secure with verification.</CardDescription>
+                    <CardTitle>{t("profile.identity.title", "Identity check")}</CardTitle>
+                    <CardDescription>{t("profile.identity.subtitle", "Keep your account secure with verification.")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="rounded-xl border border-slate-800/70 bg-slate-900/70 p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-white">Phone verification</p>
+                          <p className="text-sm font-semibold text-white">{t("profile.identity.phone", "Phone verification")}</p>
                           <p className="text-xs text-slate-400">
-                            Phone verification is disabled. Email-only login is active.
+                            {t("profile.identity.phone_disabled", "Phone verification is disabled. Email-only login is active.")}
                           </p>
                         </div>
-                        <Badge variant="outline">Disabled</Badge>
+                        <Badge variant="outline">{t("profile.identity.disabled", "Disabled")}</Badge>
                       </div>
                       {verificationStatus.error && (
                         <p className="mt-2 text-xs text-red-400">{verificationStatus.error}</p>
@@ -743,11 +757,11 @@ export default function ProfilePage() {
                     <div className="rounded-xl border border-slate-800/70 bg-slate-900/70 p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-white">Email verification</p>
+                          <p className="text-sm font-semibold text-white">{t("profile.identity.email", "Email verification")}</p>
                           <p className="text-xs text-slate-400">{profileData.email}</p>
                         </div>
                         <Badge variant={user?.emailVerified ? "default" : "outline"}>
-                          {user?.emailVerified ? "Verified" : "Pending"}
+                          {user?.emailVerified ? t("profile.status.verified", "Verified") : t("profile.status.pending", "Pending")}
                         </Badge>
                       </div>
                     </div>
@@ -755,11 +769,13 @@ export default function ProfilePage() {
                     <div className="rounded-xl border border-slate-800/70 bg-slate-900/70 p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-semibold text-white">Account status</p>
-                          <p className="text-xs text-slate-400">{isBlocked ? "Blocked by admin" : "Good standing"}</p>
+                          <p className="text-sm font-semibold text-white">{t("profile.identity.status", "Account status")}</p>
+                          <p className="text-xs text-slate-400">
+                            {isBlocked ? t("profile.status.blocked_by_admin", "Blocked by admin") : t("profile.status.good_standing", "Good standing")}
+                          </p>
                         </div>
                         <Badge variant={isBlocked ? "destructive" : "default"}>
-                          {isBlocked ? "Blocked" : "Clear"}
+                          {isBlocked ? t("profile.status.blocked", "Blocked") : t("profile.status.clear", "Clear")}
                         </Badge>
                       </div>
                     </div>

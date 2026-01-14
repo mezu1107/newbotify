@@ -242,7 +242,13 @@
 
 
 
+"use client"
+
+import { useI18n } from "@/lib/i18n/provider"
+
 export default function MissionsComingSoon() {
+  const { t } = useI18n()
+
   return (
     <div
       style={{
@@ -270,7 +276,7 @@ export default function MissionsComingSoon() {
             marginBottom: "12px",
           }}
         >
-          Missions Are Coming Soon 🚀
+          {t("missions.coming_soon.title", "Missions Are Coming Soon 🚀")}
         </h1>
 
         <p
@@ -281,9 +287,10 @@ export default function MissionsComingSoon() {
             marginBottom: "16px",
           }}
         >
-          We are currently working on something exciting for you.
-          The Missions feature is under active development and will be
-          available very soon.
+          {t(
+            "missions.coming_soon.subtitle",
+            "We are currently working on something exciting for you. The Missions feature is under active development and will be available very soon.",
+          )}
         </p>
 
         <p
@@ -293,9 +300,10 @@ export default function MissionsComingSoon() {
             color: "#777",
           }}
         >
-          Please stay tuned — you’ll see these missions live shortly,
-          with rewards, progress tracking, and a smooth experience.
-          Thank you for your patience and support 💙
+          {t(
+            "missions.coming_soon.footer",
+            "Please stay tuned — you’ll see these missions live shortly, with rewards, progress tracking, and a smooth experience. Thank you for your patience and support 💙",
+          )}
         </p>
       </div>
     </div>

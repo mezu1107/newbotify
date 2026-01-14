@@ -12,6 +12,7 @@ import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { OTPInput } from "@/components/auth/otp-input"
 import { formatOTPSuccessMessage, type OTPSuccessPayload } from "@/lib/utils/otp-messages"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface RegisterFormData {
   name: string
@@ -24,6 +25,7 @@ interface RegisterFormData {
 export function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useI18n()
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
@@ -78,7 +80,7 @@ export function RegisterForm() {
 
     if (step === "details") {
       if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match")
+        setError(t("auth.register.error.password_mismatch", "Passwords do not match"))
         return
       }
 
@@ -97,14 +99,17 @@ export function RegisterForm() {
         const data = (await response.json().catch(() => ({}))) as OTPSuccessPayload & { error?: string }
 
         if (!response.ok) {
-          setError(data.message || data.error || "Failed to send verification code")
+          setError(data.message || data.error || t("auth.register.error.send_code", "Failed to send verification code"))
           return
         }
 
         setInfoMessage(
           formatOTPSuccessMessage(
             data,
-            "Verification code sent to your email. Enter it below to verify your account.",
+            t(
+              "auth.register.info.code_sent",
+              "Verification code sent to your email. Enter it below to verify your account.",
+            ),
           ),
         )
         setStep("otp")
@@ -112,7 +117,7 @@ export function RegisterForm() {
         setOtpCountdown(60)
       } catch (submitError) {
         console.error("Send OTP error", submitError)
-        setError("Network error. Please try again.")
+        setError(t("auth.register.error.network", "Network error. Please try again."))
       } finally {
         setIsLoading(false)
       }
@@ -121,7 +126,7 @@ export function RegisterForm() {
     }
 
     if (otpValue.length !== 6) {
-      setError("Please enter the 6-digit verification code")
+      setError(t("auth.register.error.otp_required", "Please enter the 6-digit verification code"))
       return
     }
 
@@ -142,7 +147,7 @@ export function RegisterForm() {
 
       if (!verifyResponse.ok) {
         const parsedError = verifyData as { error?: string; message?: string }
-        setError(parsedError.message || parsedError.error || "Verification failed")
+        setError(parsedError.message || parsedError.error || t("auth.register.error.verify_failed", "Verification failed"))
         return
       }
 
@@ -162,14 +167,14 @@ export function RegisterForm() {
 
       if (!registerResponse.ok) {
         const parsedError = registerData as { error?: string; message?: string }
-        setError(parsedError?.message || parsedError?.error || "Registration failed")
+        setError(parsedError?.message || parsedError?.error || t("auth.register.error.register_failed", "Registration failed"))
         return
       }
 
       router.push("/dashboard")
     } catch (submitError) {
       console.error("Registration with OTP error", submitError)
-      setError("Network error. Please try again.")
+      setError(t("auth.register.error.network", "Network error. Please try again."))
     } finally {
       setIsLoading(false)
     }
@@ -195,16 +200,16 @@ export function RegisterForm() {
       const data = (await response.json().catch(() => ({}))) as OTPSuccessPayload & { error?: string; message?: string }
 
       if (!response.ok) {
-        setError(data.message || data.error || "Failed to resend code")
+        setError(data.message || data.error || t("auth.register.error.resend_failed", "Failed to resend code"))
         return
       }
 
-      setInfoMessage(formatOTPSuccessMessage(data, "A new verification code has been sent to your email."))
+      setInfoMessage(formatOTPSuccessMessage(data, t("auth.register.info.code_resent", "A new verification code has been sent to your email.")))
       setOtpValue("")
       setOtpCountdown(60)
     } catch (resendError) {
       console.error("Resend OTP error", resendError)
-      setError("Network error. Please try again.")
+      setError(t("auth.register.error.network", "Network error. Please try again."))
     } finally {
       setIsResending(false)
     }
@@ -222,14 +227,17 @@ export function RegisterForm() {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10">
               <UserPlus className="h-4 w-4" />
             </span>
-            Start your referral journey
+            {t("auth.register.badge", "Start your referral journey")}
           </div>
           <div className="space-y-3">
             <h1 className="text-3xl font-semibold leading-tight text-white drop-shadow-sm">
-              Create an account with a fresh, split-panel experience
+              {t("auth.register.title", "Create an account with a fresh, split-panel experience")}
             </h1>
             <p className="text-sm leading-relaxed text-slate-200/80">
-              We separated guidance from actions so you can stay focused. Complete your details, verify with email, and secure your referral perks.
+              {t(
+                "auth.register.subtitle",
+                "We separated guidance from actions so you can stay focused. Complete your details, verify with email, and secure your referral perks.",
+              )}
             </p>
           </div>
 
@@ -237,22 +245,28 @@ export function RegisterForm() {
             <div className="flex items-start gap-3">
               <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary">1</span>
               <div>
-                <p className="text-sm font-semibold text-white">Add your details</p>
-                <p className="text-xs text-slate-200/70">Name, email, and a referral code you received.</p>
+                <p className="text-sm font-semibold text-white">{t("auth.register.step_one.title", "Add your details")}</p>
+                <p className="text-xs text-slate-200/70">
+                  {t("auth.register.step_one.subtitle", "Name, email, and a referral code you received.")}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary">2</span>
               <div>
-                <p className="text-sm font-semibold text-white">Verify ownership</p>
-                <p className="text-xs text-slate-200/70">We send a short-lived code to your inbox. Enter it to continue.</p>
+                <p className="text-sm font-semibold text-white">{t("auth.register.step_two.title", "Verify ownership")}</p>
+                <p className="text-xs text-slate-200/70">
+                  {t("auth.register.step_two.subtitle", "We send a short-lived code to your inbox. Enter it to continue.")}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <span className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary">3</span>
               <div>
-                <p className="text-sm font-semibold text-white">Join the program</p>
-                <p className="text-xs text-slate-200/70">Access the referral dashboard and begin inviting others.</p>
+                <p className="text-sm font-semibold text-white">{t("auth.register.step_three.title", "Join the program")}</p>
+                <p className="text-xs text-slate-200/70">
+                  {t("auth.register.step_three.subtitle", "Access the referral dashboard and begin inviting others.")}
+                </p>
               </div>
             </div>
           </div>
@@ -263,8 +277,8 @@ export function RegisterForm() {
           <div className="absolute right-10 bottom-10 h-10 w-10 rounded-full bg-accent/10 blur-xl" />
           <div className="relative space-y-6">
             <div className="space-y-1 text-left">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-200/70">Create Account</p>
-              <p className="text-lg font-semibold text-white">Verify and activate your referral profile</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-200/70">{t("auth.register.form.kicker", "Create Account")}</p>
+              <p className="text-lg font-semibold text-white">{t("auth.register.form.title", "Verify and activate your referral profile")}</p>
             </div>
 
             {error && (
@@ -283,11 +297,11 @@ export function RegisterForm() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-3">
                   <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                    Name
+                    {t("auth.register.label.name", "Name")}
                   </Label>
                   <Input
                     id="name"
-                    placeholder="Enter name"
+                    placeholder={t("auth.register.placeholder.name", "Enter name")}
                     value={formData.name}
                     onChange={(event) => {
                       setFormData((prev) => ({ ...prev, name: event.target.value }))
@@ -302,12 +316,12 @@ export function RegisterForm() {
 
                 <div className="space-y-3">
                   <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                    Email
+                    {t("auth.register.label.email", "Email")}
                   </Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter email"
+                    placeholder={t("auth.register.placeholder.email", "Enter email")}
                     value={formData.email}
                     onChange={(event) => {
                       setFormData((prev) => ({ ...prev, email: event.target.value }))
@@ -325,11 +339,11 @@ export function RegisterForm() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-3">
                   <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                    Password
+                    {t("auth.register.label.password", "Password")}
                   </Label>
                   <PasswordInput
                     id="password"
-                    placeholder="Enter password"
+                    placeholder={t("auth.register.placeholder.password", "Enter password")}
                     value={formData.password}
                     onChange={(event) => {
                       setFormData((prev) => ({ ...prev, password: event.target.value }))
@@ -349,11 +363,11 @@ export function RegisterForm() {
                     htmlFor="confirmPassword"
                     className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80"
                   >
-                    Re-enter Password
+                    {t("auth.register.label.confirm_password", "Re-enter Password")}
                   </Label>
                   <PasswordInput
                     id="confirmPassword"
-                    placeholder="Re-enter password"
+                    placeholder={t("auth.register.placeholder.confirm_password", "Re-enter password")}
                     value={formData.confirmPassword}
                     onChange={(event) => {
                       setFormData((prev) => ({ ...prev, confirmPassword: event.target.value }))
@@ -371,12 +385,12 @@ export function RegisterForm() {
 
               <div className="space-y-3">
                 <Label htmlFor="referralCode" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                  Referral Code
+                  {t("auth.register.label.referral_code", "Referral Code")}
                 </Label>
                 <Input
                   id="referralCode"
                   type="text"
-                  placeholder="Enter referral code (required)"
+                  placeholder={t("auth.register.placeholder.referral_code", "Enter referral code (required)")}
                   value={formData.referralCode}
                   onChange={(event) => {
                     setFormData((prev) => ({ ...prev, referralCode: event.target.value.toUpperCase() }))
@@ -394,13 +408,18 @@ export function RegisterForm() {
                 <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className="space-y-2 text-center">
                     <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                      Enter the 6-digit code
+                      {t("auth.register.label.otp", "Enter the 6-digit code")}
                     </Label>
                     <OTPInput value={otpValue} onChange={setOtpValue} disabled={isLoading} />
                   </div>
                   <div className="flex flex-col items-center justify-center gap-2 text-xs text-slate-200/80 sm:flex-row">
                     <span>
-                      {otpCountdown > 0 ? `You can request a new code in ${otpCountdown}s` : "Didn't get the code?"}
+                      {otpCountdown > 0
+                        ? `${t("auth.register.otp.countdown_prefix", "You can request a new code in ")}${otpCountdown}${t(
+                            "auth.register.otp.countdown_suffix",
+                            "s",
+                          )}`
+                        : t("auth.register.otp.no_code", "Didn't get the code?")}
                     </span>
                     <Button
                       type="button"
@@ -412,10 +431,10 @@ export function RegisterForm() {
                     >
                       {isResending ? (
                         <>
-                          <RefreshCw className="mr-1 h-3 w-3 animate-spin" /> Resending...
+                          <RefreshCw className="mr-1 h-3 w-3 animate-spin" /> {t("auth.register.otp.resending", "Resending...")}
                         </>
                       ) : (
-                        "Resend code"
+                        t("auth.register.otp.resend", "Resend code")
                       )}
                     </Button>
                   </div>
@@ -430,7 +449,7 @@ export function RegisterForm() {
                     className="h-11 rounded-xl border-white/30 bg-transparent text-white hover:bg-white/5 sm:w-auto"
                     onClick={() => router.push("/auth/forgot")}
                   >
-                    Forgot Password?
+                    {t("auth.register.forgot", "Forgot Password?")}
                   </Button>
                 )}
 
@@ -442,21 +461,23 @@ export function RegisterForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {step === "details" ? "Sending Code..." : "Verifying..."}
+                      {step === "details"
+                        ? t("auth.register.submitting", "Sending Code...")
+                        : t("auth.register.verifying", "Verifying...")}
                     </>
                   ) : step === "details" ? (
-                    "Send Verification Code"
+                    t("auth.register.submit", "Send Verification Code")
                   ) : (
-                    "Verify & Create Account"
+                    t("auth.register.submit_verify", "Verify & Create Account")
                   )}
                 </Button>
               </div>
             </form>
 
             <p className="text-center text-sm text-slate-200/80">
-              Already have an account?{" "}
+              {t("auth.register.already_have", "Already have an account?")}{" "}
               <Link href="/auth/login" className="font-semibold text-primary hover:underline">
-                Login instead
+                {t("auth.register.login_instead", "Login instead")}
               </Link>
             </p>
           </div>

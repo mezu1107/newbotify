@@ -63,14 +63,17 @@ export default async function DepositPage() {
   const session = verifyToken(token)
   if (!session) redirect("/auth/login")
 
-  let loadError: string | null = null
+  let loadError: { key: string; fallback: string } | null = null
   let context: WalletContext | null = null
 
   try {
     context = await fetchWalletContext(session.userId)
   } catch (err) {
     console.error("Wallet context error:", err)
-    loadError = "We couldn't load your wallet details right now."
+    loadError = {
+      key: "deposit.error.wallet_context",
+      fallback: "We couldn't load your wallet details right now.",
+    }
   }
 
   if (!context) {
@@ -83,11 +86,19 @@ export default async function DepositPage() {
     walletOptions = await getDepositWalletOptions()
   } catch (error) {
     console.error("Wallet options error:", error)
-    loadError = loadError ?? "Deposit wallets are not configured."
+    loadError =
+      loadError ?? {
+        key: "deposit.error.wallets_missing",
+        fallback: "Deposit wallets are not configured.",
+      }
   }
 
   if (walletOptions.length === 0) {
-    loadError = loadError ?? "Deposit wallets are not configured."
+    loadError =
+      loadError ?? {
+        key: "deposit.error.wallets_missing",
+        fallback: "Deposit wallets are not configured.",
+      }
   }
 
   const isActive = !!context.user.isActive

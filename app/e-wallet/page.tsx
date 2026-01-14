@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, CreditCard, Plus, Trash2, CheckCircle } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface WalletAddress {
   _id: string
@@ -22,6 +23,7 @@ interface WalletAddress {
 }
 
 export default function EWalletPage() {
+  const { t } = useI18n()
   const [user, setUser] = useState<any>(null)
   const [addresses, setAddresses] = useState<WalletAddress[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,22 +76,22 @@ export default function EWalletPage() {
       const data = await response.json()
 
       if (response.ok) {
-        setAddSuccess("Wallet address added successfully!")
+        setAddSuccess(t("ewallet.add.success", "Wallet address added successfully!"))
         setAddForm({ label: "", chain: "", address: "" })
         setShowAddForm(false)
         fetchData()
       } else {
-        setAddError(data.error || "Failed to add address")
+        setAddError(data.error || t("ewallet.add.error", "Failed to add address"))
       }
     } catch (err) {
-      setAddError("Network error. Please try again.")
+      setAddError(t("ewallet.add.error_network", "Network error. Please try again."))
     } finally {
       setAddLoading(false)
     }
   }
 
   const handleDeleteAddress = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this address?")) return
+    if (!confirm(t("ewallet.delete.confirm", "Are you sure you want to delete this address?"))) return
 
     try {
       const response = await fetch(`/api/e-wallet/addresses/${id}`, {
@@ -99,10 +101,10 @@ export default function EWalletPage() {
       if (response.ok) {
         fetchData()
       } else {
-        alert("Failed to delete address")
+        alert(t("ewallet.delete.error", "Failed to delete address"))
       }
     } catch (error) {
-      alert("Network error. Please try again.")
+      alert(t("ewallet.delete.error_network", "Network error. Please try again."))
     }
   }
 
@@ -121,17 +123,17 @@ export default function EWalletPage() {
       <main className="flex-1 w-full min-w-0 overflow-auto md:ml-64">
         <div className="w-full max-w-none p-6 md:p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-balance">E-Wallet</h1>
-            <p className="text-muted-foreground">Manage your external wallet addresses</p>
+            <h1 className="text-3xl font-bold text-balance">{t("ewallet.title", "E-Wallet")}</h1>
+            <p className="text-muted-foreground">{t("ewallet.subtitle", "Manage your external wallet addresses")}</p>
           </div>
 
           <div className="space-y-6">
             {/* Add Address Button */}
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Wallet Addresses</h2>
+              <h2 className="text-xl font-semibold">{t("ewallet.addresses.title", "Wallet Addresses")}</h2>
               <Button onClick={() => setShowAddForm(!showAddForm)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Address
+                {t("ewallet.add.cta", "Add Address")}
               </Button>
             </div>
 
@@ -139,7 +141,7 @@ export default function EWalletPage() {
             {showAddForm && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Add New Wallet Address</CardTitle>
+                  <CardTitle>{t("ewallet.add.title", "Add New Wallet Address")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAddAddress} className="space-y-4">
@@ -158,11 +160,11 @@ export default function EWalletPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="label">Label</Label>
+                        <Label htmlFor="label">{t("ewallet.add.label", "Label")}</Label>
                         <Input
                           id="label"
                           type="text"
-                          placeholder="e.g., My Main Wallet"
+                          placeholder={t("ewallet.add.placeholder.label", "e.g., My Main Wallet")}
                           value={addForm.label}
                           onChange={(e) => setAddForm((prev) => ({ ...prev, label: e.target.value }))}
                           required
@@ -170,11 +172,11 @@ export default function EWalletPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="chain">Blockchain</Label>
+                        <Label htmlFor="chain">{t("ewallet.add.chain", "Blockchain")}</Label>
                         <Input
                           id="chain"
                           type="text"
-                          placeholder="e.g., Ethereum, BSC, TRON"
+                          placeholder={t("ewallet.add.placeholder.chain", "e.g., Ethereum, BSC, TRON")}
                           value={addForm.chain}
                           onChange={(e) => setAddForm((prev) => ({ ...prev, chain: e.target.value }))}
                           required
@@ -183,11 +185,11 @@ export default function EWalletPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address">Wallet Address</Label>
+                      <Label htmlFor="address">{t("ewallet.add.address", "Wallet Address")}</Label>
                       <Input
                         id="address"
                         type="text"
-                        placeholder="Enter wallet address"
+                        placeholder={t("ewallet.add.placeholder.address", "Enter wallet address")}
                         value={addForm.address}
                         onChange={(e) => setAddForm((prev) => ({ ...prev, address: e.target.value }))}
                         required
@@ -199,17 +201,17 @@ export default function EWalletPage() {
                         {addLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Adding...
+                            {t("ewallet.add.submitting", "Adding...")}
                           </>
                         ) : (
                           <>
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Address
+                            {t("ewallet.add.cta", "Add Address")}
                           </>
                         )}
                       </Button>
                       <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
-                        Cancel
+                        {t("ewallet.add.cancel", "Cancel")}
                       </Button>
                     </div>
                   </form>
@@ -223,13 +225,13 @@ export default function EWalletPage() {
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No wallet addresses</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t("ewallet.empty.title", "No wallet addresses")}</h3>
                     <p className="text-muted-foreground text-center mb-4">
-                      Add your external wallet addresses to manage withdrawals and deposits.
+                      {t("ewallet.empty.subtitle", "Add your external wallet addresses to manage withdrawals and deposits.")}
                     </p>
                     <Button onClick={() => setShowAddForm(true)}>
                       <Plus className="mr-2 h-4 w-4" />
-                      Add Your First Address
+                      {t("ewallet.empty.cta", "Add Your First Address")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -243,16 +245,17 @@ export default function EWalletPage() {
                             <h3 className="font-semibold">{address.label}</h3>
                             {address.verified && (
                               <Badge variant="default" className="text-xs">
-                                Verified
+                                {t("ewallet.address.verified", "Verified")}
                               </Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            <strong>Chain:</strong> {address.chain}
+                            <strong>{t("ewallet.address.chain", "Chain:")}</strong> {address.chain}
                           </p>
                           <p className="text-sm font-mono bg-muted p-2 rounded break-all">{address.address}</p>
                           <p className="text-xs text-muted-foreground">
-                            Added on {new Date(address.createdAt).toLocaleDateString()}
+                            {t("ewallet.address.added_on", "Added on ")}
+                            {new Date(address.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         <Button

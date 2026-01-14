@@ -45,7 +45,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
     if (open) {
       setShouldRender(true)
     }
-  }, [open])
+  }, [open, t])
 
   useEffect(() => {
     if (open && !hasFetchedUser.current) {
@@ -54,7 +54,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
       void fetch("/api/auth/me")
         .then(async (response) => {
           if (!response.ok) {
-            throw new Error("Failed to load user")
+            throw new Error(t("nav.error.load_user", "Failed to load user"))
           }
           const data = (await response.json()) as { user?: DrawerUser }
           if (data.user) {
@@ -64,7 +64,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
         })
         .catch((error) => {
           console.error(error)
-          setUserError("Unable to load account details")
+          setUserError(t("nav.error.load_account", "Unable to load account details"))
         })
         .finally(() => {
           setIsLoadingUser(false)
@@ -78,9 +78,11 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
     }
 
     if (liveRegionRef.current) {
-      liveRegionRef.current.textContent = open ? "Navigation drawer opened" : "Navigation drawer closed"
+      liveRegionRef.current.textContent = open
+        ? t("nav.drawer.opened", "Navigation drawer opened")
+        : t("nav.drawer.closed", "Navigation drawer closed")
     }
-  }, [open, shouldRender])
+  }, [open, shouldRender, t])
 
   useEffect(() => {
     const body = document.body
@@ -227,14 +229,14 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
           <div className="flex h-full flex-col">
             <div className="space-y-4 px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
               <DialogPrimitive.Title id={titleId} className="sr-only">
-                Mobile navigation
+                {t("nav.drawer.title", "Mobile navigation")}
               </DialogPrimitive.Title>
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
                   {user?.avatarUrl ? (
-                    <AvatarImage src={user.avatarUrl} alt={user.name ?? "User avatar"} />
+                    <AvatarImage src={user.avatarUrl} alt={user.name ?? t("nav.drawer.avatar_alt", "User avatar")} />
                   ) : (
-                    <AvatarFallback className="text-base font-semibold">{initials || "?"}</AvatarFallback>
+                    <AvatarFallback className="text-base font-semibold">{initials || t("nav.drawer.avatar_fallback", "?")}</AvatarFallback>
                   )}
                 </Avatar>
                 <div className="min-w-0 flex-1">

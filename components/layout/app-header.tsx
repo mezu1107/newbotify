@@ -58,7 +58,7 @@ export function AppHeader() {
               ref={menuButtonRef}
               type="button"
               className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-slate-800/70 bg-slate-900 text-slate-100 transition hover:border-cyan-400/60 hover:text-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 md:hidden"
-              aria-label="Open menu"
+              aria-label={t("nav.open_menu", "Open menu")}
               aria-expanded={drawerOpen}
               aria-controls="mobile-drawer"
               onClick={() => setDrawerOpen(true)}
@@ -71,11 +71,11 @@ export function AppHeader() {
               <div className="leading-tight">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-medium uppercase tracking-[0.42em] text-slate-400">
-                    Signal Grid
+                    {t("nav.brand.signal_grid", "Signal Grid")}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-emerald-300/70" />
                   <span className="text-[10px] font-medium uppercase tracking-[0.34em] text-slate-500">
-                    Beta
+                    {t("nav.brand.beta", "Beta")}
                   </span>
                 </div>
 
@@ -85,7 +85,7 @@ export function AppHeader() {
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/15 bg-emerald-300/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-200">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                    Live
+                    {t("nav.brand.live", "Live")}
                   </span>
                 </div>
               </div>

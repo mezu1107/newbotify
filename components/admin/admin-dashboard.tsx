@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, RefreshCw, ShieldCheck } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { formatNumberWithFallback } from "@/lib/utils/safe-parsing"
+import { useI18n } from "@/lib/i18n/provider"
 import type {
   AdminSessionUser,
   AdminStats,
@@ -106,6 +107,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
   const [user, setUser] = useState(initialUser)
   const [stats, setStats] = useState(initialStats)
   const { toast } = useToast()
+  const { t } = useI18n()
 
   const [walletSettings, setWalletSettings] = useState<AdminWalletSetting[]>(initialSettings.wallets ?? [])
   const [walletLoading, setWalletLoading] = useState(false)
@@ -155,7 +157,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
       const payload = await readJsonSafe<{ wallets?: AdminWalletSetting[]; error?: unknown }>(response)
 
       if (!response.ok) {
-        const message = typeof payload?.error === "string" ? payload.error : "Unable to load wallet settings"
+        const message = typeof payload?.error === "string" ? payload.error : t("admin.wallet.error", "Unable to load wallet settings")
         throw new Error(message)
       }
 
@@ -164,7 +166,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
     } catch (error) {
       console.error(error)
       runIfMounted(() =>
-        setWalletError(error instanceof Error ? error.message : "Unable to load wallet settings"),
+        setWalletError(error instanceof Error ? error.message : t("admin.wallet.error", "Unable to load wallet settings")),
       )
     } finally {
       runIfMounted(() => setWalletLoading(false))
@@ -181,12 +183,12 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
       const payload = await readJsonSafe<StatsResponse>(response)
 
       if (!response.ok) {
-        const message = typeof payload?.error === "string" ? payload.error : "Unable to load stats"
+        const message = typeof payload?.error === "string" ? payload.error : t("admin.stats.error", "Unable to load stats")
         throw new Error(message)
       }
 
       if (!payload) {
-        throw new Error("Received an empty response while loading stats")
+        throw new Error(t("admin.stats.empty", "Received an empty response while loading stats"))
       }
 
       const normalized = normalizeAdminStats(payload.stats)
@@ -197,7 +199,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
       lastStatsErrorRef.current = null
     } catch (error) {
       console.error(error)
-      const message = error instanceof Error ? error.message : "Unable to load stats"
+      const message = error instanceof Error ? error.message : t("admin.stats.error", "Unable to load stats")
       if (lastStatsErrorRef.current !== message) {
         toast({ variant: "destructive", description: message })
         lastStatsErrorRef.current = message
@@ -239,7 +241,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
         const payload = await readJsonSafe<TransactionsResponse>(response)
 
         if (!response.ok) {
-          const message = typeof payload?.error === "string" ? payload.error : "Unable to load transactions"
+          const message = typeof payload?.error === "string" ? payload.error : t("admin.transactions.error", "Unable to load transactions")
           throw new Error(message)
         }
 
@@ -249,7 +251,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
         if (!Array.isArray(payload?.data)) {
           console.warn("Unexpected transactions payload", payload)
           runIfMounted(() =>
-            setTransactionError((current) => current ?? "Received an invalid response while loading transactions"),
+            setTransactionError((current) => current ?? t("admin.transactions.invalid", "Received an invalid response while loading transactions")),
           )
         }
 
@@ -262,7 +264,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
       } catch (error) {
         console.error(error)
         runIfMounted(() =>
-          setTransactionError(error instanceof Error ? error.message : "Unable to load transactions"),
+          setTransactionError(error instanceof Error ? error.message : t("admin.transactions.error", "Unable to load transactions")),
         )
       } finally {
         transactionLoadingRef.current = false
@@ -306,7 +308,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
         const payload = await readJsonSafe<UsersResponse>(response)
 
         if (!response.ok) {
-          const message = typeof payload?.error === "string" ? payload.error : "Unable to load users"
+          const message = typeof payload?.error === "string" ? payload.error : t("admin.users.error", "Unable to load users")
           throw new Error(message)
         }
 
@@ -315,7 +317,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
 
         if (!Array.isArray(payload?.data)) {
           console.warn("Unexpected users payload", payload)
-          runIfMounted(() => setUserError((current) => current ?? "Received an invalid response while loading users"))
+          runIfMounted(() => setUserError((current) => current ?? t("admin.users.invalid", "Received an invalid response while loading users")))
         }
 
         userCursorRef.current = nextCursorValue
@@ -326,7 +328,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
         })
       } catch (error) {
         console.error(error)
-        runIfMounted(() => setUserError(error instanceof Error ? error.message : "Unable to load users"))
+        runIfMounted(() => setUserError(error instanceof Error ? error.message : t("admin.users.error", "Unable to load users")))
       } finally {
         userLoadingRef.current = false
         runIfMounted(() => setUserLoading(false))
@@ -407,18 +409,18 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
       })
       const payload = await readJsonSafe<{ error?: unknown }>(response)
       if (!response.ok) {
-        const message = typeof payload?.error === "string" ? payload.error : "Failed to queue export"
+        const message = typeof payload?.error === "string" ? payload.error : t("admin.export.error", "Failed to queue export")
         throw new Error(message)
       }
       if (typeof window !== "undefined") {
-        window.alert("Export queued. You will receive an email when it is ready.")
+        window.alert(t("admin.export.success", "Export queued. You will receive an email when it is ready."))
       } else {
-        toast({ description: "Export queued. You will receive an email when it is ready." })
+        toast({ description: t("admin.export.success", "Export queued. You will receive an email when it is ready.") })
       }
     } catch (error) {
       console.error(error)
       runIfMounted(() =>
-        setTransactionError(error instanceof Error ? error.message : "Unable to queue export"),
+        setTransactionError(error instanceof Error ? error.message : t("admin.export.error", "Unable to queue export")),
       )
     }
   }, [runIfMounted, toast, transactionFilters])
@@ -438,42 +440,46 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
         <div className="space-y-5 px-4 py-4 sm:px-5 sm:py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold">Admin Panel</h1>
-              <p className="text-sm text-muted-foreground">Monitor platform performance and review user activity.</p>
+              <h1 className="text-3xl font-bold">{t("admin.title", "Admin Panel")}</h1>
+              <p className="text-sm text-muted-foreground">{t("admin.subtitle", "Monitor platform performance and review user activity.")}</p>
             </div>
             <Button onClick={refreshAll} variant="secondary" className="gap-2" disabled={transactionLoading || userLoading}>
-              {transactionLoading || userLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh
+              {transactionLoading || userLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} {t("admin.refresh", "Refresh")}
             </Button>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Total users" value={stats.totalUsers} />
-            <StatCard label="Active users" value={stats.activeUsers} />
-            <StatCard label="Pending deposits" value={stats.pendingDeposits} />
-            <StatCard label="Pending withdrawals" value={stats.pendingWithdrawals} />
+            <StatCard label={t("admin.stats.total_users", "Total users")} value={stats.totalUsers} />
+            <StatCard label={t("admin.stats.active_users", "Active users")} value={stats.activeUsers} />
+            <StatCard label={t("admin.stats.pending_deposits", "Pending deposits")} value={stats.pendingDeposits} />
+            <StatCard label={t("admin.stats.pending_withdrawals", "Pending withdrawals")} value={stats.pendingWithdrawals} />
           </div>
 
           <Card className="gap-5 py-5">
             <CardHeader className="px-5 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                <CardTitle>Wallet addresses</CardTitle>
+                <CardTitle>{t("admin.wallet.title", "Wallet addresses")}</CardTitle>
               </div>
               <CardDescription>
-                Deposit wallet addresses are managed via environment variables (WALLET_ADDRESS_1, WALLET_ADDRESS_2, WALLET_ADDRESS_3) and cannot
-                be edited from the admin panel.
+                {t(
+                  "admin.wallet.subtitle",
+                  "Deposit wallet addresses are managed via environment variables (WALLET_ADDRESS_1, WALLET_ADDRESS_2, WALLET_ADDRESS_3) and cannot be edited from the admin panel.",
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-5 pb-5">
               <div className="space-y-5">
                 {walletSettings.length === 0 ? (
                   <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-                    No wallet addresses configured in the environment.
+                    {t("admin.wallet.empty", "No wallet addresses configured in the environment.")}
                   </div>
                 ) : (
                   <div className="grid gap-3 md:grid-cols-3">
                     {walletSettings.map((wallet) => {
-                      const sourceLabel = wallet.source === "env" ? "Environment default" : "Not configured"
+                      const sourceLabel = wallet.source === "env"
+                        ? t("admin.wallet.source_env", "Environment default")
+                        : t("admin.wallet.source_missing", "Not configured")
 
                       return (
                         <div key={wallet.id} className="space-y-2">
@@ -485,13 +491,13 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
                             value={wallet.address}
                             readOnly
                             disabled
-                            placeholder="Not configured"
+                            placeholder={t("admin.wallet.not_configured", "Not configured")}
                             autoComplete="off"
                             spellCheck={false}
                           />
                           <div className="space-y-1 text-xs text-muted-foreground">
-                            <p>Network: {wallet.network}</p>
-                            <p>Source: {sourceLabel}</p>
+                            <p>{t("admin.wallet.network", "Network: ")}{wallet.network}</p>
+                            <p>{t("admin.wallet.source", "Source: ")}{sourceLabel}</p>
                           </div>
                         </div>
                       )
@@ -510,7 +516,7 @@ export function AdminDashboard({ initialUser, initialStats, initialSettings, ini
                     disabled={walletLoading}
                   >
                     {walletLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                    Refresh
+                    {t("admin.wallet.refresh", "Refresh")}
                   </Button>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Users, TrendingUp, Calendar } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface TeamMember {
   _id: string
@@ -27,6 +28,7 @@ interface TeamTreeProps {
 }
 
 export function TeamTree({ teamTree, maxDepth = 3, currentDepth = 0 }: TeamTreeProps) {
+  const { t } = useI18n()
   if (!teamTree || currentDepth >= maxDepth) return null
 
   const getInitials = (name: string) => {
@@ -60,10 +62,12 @@ export function TeamTree({ teamTree, maxDepth = 3, currentDepth = 0 }: TeamTreeP
                   <p className="text-sm text-muted-foreground">{teamTree.email}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge variant={teamTree.level > 0 ? "default" : "secondary"}>Level {teamTree.level}</Badge>
+                  <Badge variant={teamTree.level > 0 ? "default" : "secondary"}>
+                    {t("team.tree.level", "Level")} {teamTree.level}
+                  </Badge>
                   {teamTree.qualified && (
                     <Badge variant="outline" className="text-green-600 border-green-600">
-                      Active
+                      {t("team.tree.active", "Active")}
                     </Badge>
                   )}
                 </div>
@@ -72,28 +76,31 @@ export function TeamTree({ teamTree, maxDepth = 3, currentDepth = 0 }: TeamTreeP
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center space-x-1">
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Deposits:</span>
+                  <span className="text-muted-foreground">{t("team.tree.deposits", "Deposits:")}</span>
                   <span className="font-medium">${teamTree.depositTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Direct:</span>
+                  <span className="text-muted-foreground">{t("team.tree.direct", "Direct:")}</span>
                   <span className="font-medium">{teamTree.directCount}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Users className="h-4 w-4 text-green-600" />
-                  <span className="text-muted-foreground">Active:</span>
+                  <span className="text-muted-foreground">{t("team.tree.active_label", "Active:")}</span>
                   <span className="font-medium text-green-600">{teamTree.activeCount}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Joined:</span>
+                  <span className="text-muted-foreground">{t("team.tree.joined", "Joined:")}</span>
                   <span className="font-medium">{formatDate(teamTree.createdAt)}</span>
                 </div>
               </div>
 
               <div className="text-xs text-muted-foreground">
-                <span className="font-mono">Code: {teamTree.referralCode}</span>
+                <span className="font-mono">
+                  {t("team.tree.code", "Code: ")}
+                  {teamTree.referralCode}
+                </span>
               </div>
             </div>
           </div>
