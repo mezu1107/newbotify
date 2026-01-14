@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface LoginFormData {
   email: string
@@ -29,6 +30,7 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { startTask, stopTask } = useTopLoader()
+  const { t } = useI18n()
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -41,7 +43,6 @@ export function LoginForm() {
     if (!message) return ""
     const text = message.trim()
     if (!text) return ""
-    // Strip any HTML so raw server responses are not rendered in the UI
     const withoutTags = text.replace(/<[^>]*>/g, "").trim()
     return withoutTags || ""
   }
@@ -66,7 +67,7 @@ export function LoginForm() {
     try {
       let identifier = formData.email.trim().toLowerCase()
       if (!identifier) {
-        setError("Email is required")
+        setError(t("auth.login.error.required_email", "Email is required"))
         setIsLoading(false)
         return
       }
@@ -108,8 +109,8 @@ export function LoginForm() {
 
         const fallbackMessage =
           response.status === 401 || response.status === 403
-            ? "Incorrect email or password."
-            : "Login failed. Please try again."
+            ? t("auth.login.error.incorrect", "Incorrect email or password.")
+            : t("auth.login.error.failed", "Login failed. Please try again.")
 
         setError(sanitizeMessage(backendMessage) || fallbackMessage)
         return
@@ -125,11 +126,11 @@ export function LoginForm() {
           : ""
 
       if (message && /fetch failed|network|request|failed to fetch/i.test(message)) {
-        setError("Server not reachable. Please try later.")
+        setError(t("auth.login.error.server", "Server not reachable. Please try later."))
       } else if (message) {
         setError(message)
       } else {
-        setError("Server not reachable. Please try later.")
+        setError(t("auth.login.error.server", "Server not reachable. Please try later."))
       }
     } finally {
       stopTask()
@@ -149,22 +150,29 @@ export function LoginForm() {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10">
               <UserRoundPlus className="h-4 w-4" />
             </span>
-            Sign in to referrals
+            {t("auth.login.badge", "Sign in to referrals")}
           </div>
           <div className="space-y-3">
             <h1 className="text-3xl font-semibold leading-tight text-white drop-shadow-sm">
-              Modern, distraction-free login for your referral dashboard
+              {t("auth.login.title", "Modern, distraction-free login for your referral dashboard")}
             </h1>
             <p className="text-sm leading-relaxed text-slate-200/80">
-              Sign in with your email and pick up right where you left off. One clean, secure session—no phone details needed.
+              {t(
+                "auth.login.subtitle",
+                "Sign in with your email and pick up right where you left off. One clean, secure session - no phone details needed.",
+              )}
             </p>
           </div>
           <div className="grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/10" />
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-white">Adaptive security</p>
-                <p className="text-xs text-slate-200/70">We detect blocked accounts early to protect your referrals.</p>
+                <p className="text-sm font-semibold text-white">
+                  {t("auth.login.info.title", "Adaptive security")}
+                </p>
+                <p className="text-xs text-slate-200/70">
+                  {t("auth.login.info.subtitle", "We detect blocked accounts early to protect your referrals.")}
+                </p>
               </div>
             </div>
           </div>
@@ -175,8 +183,12 @@ export function LoginForm() {
           <div className="absolute left-4 bottom-6 h-10 w-10 rounded-full bg-accent/10 blur-xl" />
           <div className="relative space-y-6">
             <div className="space-y-1 text-left">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-200/70">Login</p>
-              <p className="text-lg font-semibold text-white">Access your referral space</p>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-200/70">
+                {t("auth.login.form.kicker", "Login")}
+              </p>
+              <p className="text-lg font-semibold text-white">
+                {t("auth.login.form.title", "Access your referral space")}
+              </p>
             </div>
 
             {error && (
@@ -188,12 +200,12 @@ export function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-3">
                 <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                  Email Address
+                  {t("auth.login.label.email", "Email Address")}
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="name@company.com"
+                  placeholder={t("auth.login.placeholder.email", "name@company.com")}
                   value={formData.email}
                   onChange={(event) => setFormData((prev) => ({ ...prev, email: event.target.value }))}
                   className="h-12 rounded-xl border-white/10 bg-slate-900/70 text-white placeholder:text-slate-400"
@@ -204,11 +216,11 @@ export function LoginForm() {
 
               <div className="space-y-3">
                 <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-                  Password
+                  {t("auth.login.label.password", "Password")}
                 </Label>
                 <PasswordInput
                   id="password"
-                  placeholder="Enter your password"
+                  placeholder={t("auth.login.placeholder.password", "Enter your password")}
                   value={formData.password}
                   onChange={(event) => setFormData((prev) => ({ ...prev, password: event.target.value }))}
                   required
@@ -221,7 +233,7 @@ export function LoginForm() {
                   href="/auth/forgot"
                   className="text-sm font-medium text-primary underline-offset-4 transition hover:text-primary/80"
                 >
-                  Forgot Password?
+                  {t("auth.login.forgot", "Forgot Password?")}
                 </Link>
                 <div className="flex w-full gap-3 sm:w-auto">
                   <Button
@@ -230,7 +242,7 @@ export function LoginForm() {
                     className="flex-1 h-11 rounded-xl border-white/30 bg-transparent text-white hover:bg-white/5 sm:flex-none"
                     onClick={() => router.push("/auth/register")}
                   >
-                    Create Account
+                    {t("auth.login.create_account", "Create Account")}
                   </Button>
                   <Button
                     type="submit"
@@ -240,10 +252,10 @@ export function LoginForm() {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Logging in...
+                        {t("auth.login.submitting", "Logging in...")}
                       </>
                     ) : (
-                      "Login"
+                      t("auth.login.submit", "Login")
                     )}
                   </Button>
                 </div>
@@ -255,14 +267,17 @@ export function LoginForm() {
       <Dialog open={blockedModalOpen} onOpenChange={setBlockedModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Account Blocked</DialogTitle>
+            <DialogTitle>{t("auth.login.blocked.title", "Account Blocked")}</DialogTitle>
             <DialogDescription>
-              Your account has been blocked by an administrator. For more information, contact Support.
+              {t(
+                "auth.login.blocked.desc",
+                "Your account has been blocked by an administrator. For more information, contact Support.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-start">
             <Button onClick={handleContactSupport} className="w-full">
-              Contact Support
+              {t("auth.login.blocked.cta", "Contact Support")}
             </Button>
           </DialogFooter>
         </DialogContent>

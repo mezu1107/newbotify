@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { DailyProfitMission } from "@/components/dashboard/daily-profit-mission"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface DashboardData {
   kpis: {
@@ -28,6 +29,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const [data, setData] = useState<DashboardData | null>(null)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -76,14 +78,14 @@ export default function DashboardPage() {
         dashboardPayload.rawText
       const friendlyMessage = typeof dashError === "string" && dashError.trim() ? dashError.trim() : null
 
-      setErrorMessage(friendlyMessage ?? "Failed to load dashboard data")
+      setErrorMessage(friendlyMessage ?? t("dashboard.error.title", "Failed to load dashboard data"))
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error)
-      setErrorMessage("Failed to load dashboard data")
+      setErrorMessage(t("dashboard.error.title", "Failed to load dashboard data"))
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, t])
 
   useEffect(() => {
     fetchDashboardData()
@@ -100,8 +102,12 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-medium tracking-wide text-foreground">Preparing your workspace</p>
-            <p className="text-xs text-muted-foreground">Securing session • Syncing insights • Final touches</p>
+            <p className="text-sm font-medium tracking-wide text-foreground">
+              {t("dashboard.loading.title", "Preparing your workspace")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.loading.subtitle", "Securing session - Syncing insights - Final touches")}
+            </p>
           </div>
         </div>
       </div>
@@ -115,8 +121,8 @@ export default function DashboardPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <span className="text-2xl">!</span>
           </div>
-          <p className="font-medium text-foreground">Failed to load dashboard data</p>
-          <p className="text-muted-foreground">{errorMessage || "Please refresh the page or try again later"}</p>
+          <p className="font-medium text-foreground">{t("dashboard.error.title", "Failed to load dashboard data")}</p>
+          <p className="text-muted-foreground">{errorMessage || t("dashboard.error.subtitle", "Please refresh the page or try again later")}</p>
         </div>
       </div>
     )
@@ -132,10 +138,10 @@ export default function DashboardPage() {
         <div className="grid-overlay relative mx-auto flex w-full flex-col gap-8 px-4 pb-12 pt-6 md:px-8">
           <div className="flex flex-col gap-2">
             <p className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-100">
-              5gbotify overview
+              {t("dashboard.badge.overview", "5gbotify overview")}
             </p>
-            <h1 className="text-3xl font-semibold">Hi, {user?.name}</h1>
-            <p className="text-sm text-slate-400">Role: Network Harvester · Tier {data.user.level}</p>
+            <h1 className="text-3xl font-semibold">{t("dashboard.greeting", "Hi")}, {user?.name}</h1>
+            <p className="text-sm text-slate-400">{t("dashboard.role_label", "Role")}: {t("dashboard.role_title", "Network Harvester")} {t("dashboard.role_tier", "Tier")} {data.user.level}</p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[2fr,1fr] lg:items-center">
@@ -143,11 +149,11 @@ export default function DashboardPage() {
             <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-5 shadow-lg shadow-emerald-500/10">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Ops status</p>
-                  <p className="text-sm text-slate-300">Backend parity confirmed with a refreshed 5gbotify skin.</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">{t("dashboard.ops.label", "Ops status")}</p>
+                  <p className="text-sm text-slate-300">{t("dashboard.ops.subtitle", "Backend parity confirmed with a refreshed 5gbotify skin.")}</p>
                 </div>
                 <span className="rounded-md bg-emerald-500/20 px-3 py-1 text-[11px] font-semibold uppercase text-emerald-100">
-                  synced
+                  {t("dashboard.ops.status", "synced")}
                 </span>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -155,15 +161,15 @@ export default function DashboardPage() {
                   href="/wallet/deposit"
                   className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-left text-sm font-semibold text-cyan-100 transition hover:-translate-y-[1px] hover:border-cyan-400/60"
                 >
-                  Add funds in Top-Up Center
-                  <span className="block text-xs font-normal text-cyan-50/80">Same flow, sharper look</span>
+                  {t("dashboard.ops.cta_deposit", "Add funds in Top-Up Center")}
+                  <span className="block text-xs font-normal text-cyan-50/80">{t("dashboard.ops.cta_deposit_sub", "Same flow, sharper look")}</span>
                 </Link>
                 <Link
                   href="/tasks"
                   className="rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-4 py-3 text-left text-sm font-semibold text-emerald-100 transition hover:-translate-y-[1px] hover:border-emerald-400/70"
                 >
-                  View missions
-                  <span className="block text-xs font-normal text-emerald-50/80">Track quests and rewards</span>
+                  {t("dashboard.ops.cta_missions", "View missions")}
+                  <span className="block text-xs font-normal text-emerald-50/80">{t("dashboard.ops.cta_missions_sub", "Track quests and rewards")}</span>
                 </Link>
               </div>
             </div>
@@ -180,47 +186,47 @@ export default function DashboardPage() {
           <div className="rounded-2xl border border-slate-800/70 bg-slate-900/80 p-5 shadow-lg shadow-emerald-500/10">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">Account snapshot</p>
-                <h2 className="text-xl font-semibold text-white">Engagement overview</h2>
-                <p className="text-sm text-slate-400">Check your balance, activity, and referral momentum at a glance.</p>
+                <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">{t("dashboard.snapshot.label", "Account snapshot")}</p>
+                <h2 className="text-xl font-semibold text-white">{t("dashboard.snapshot.title", "Engagement overview")}</h2>
+                <p className="text-sm text-slate-400">{t("dashboard.snapshot.subtitle", "Check your balance, activity, and referral momentum at a glance.")}</p>
               </div>
               <Link
                 href="/transactions"
                 className="rounded-md border border-emerald-500/30 px-3 py-1 text-xs font-semibold text-emerald-100 hover:border-emerald-400/70"
               >
-                View activity
+                {t("dashboard.snapshot.cta", "View activity")}
               </Link>
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Current balance</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.current_balance", "Current balance")}</p>
                 <p className="text-2xl font-semibold text-white">${data.kpis.currentBalance.toFixed(2)}</p>
-                <p className="text-xs text-slate-500">Liquid funds available today</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.current_balance_sub", "Liquid funds available today")}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Team reward pool</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.team_reward", "Team reward pool")}</p>
                 <p className="text-2xl font-semibold text-white">${data.kpis.teamReward.toFixed(2)}</p>
-                <p className="text-xs text-slate-500">Available to claim</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.team_reward_sub", "Available to claim")}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Direct members</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.direct_members", "Direct members")}</p>
                 <p className="text-2xl font-semibold text-white">{data.kpis.activeMembers}</p>
-                <p className="text-xs text-slate-500">Active referrals in your crew</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.direct_members_sub", "Active referrals in your crew")}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Total balance</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.total_balance", "Total balance")}</p>
                 <p className="text-2xl font-semibold text-white">${data.kpis.totalBalance.toFixed(2)}</p>
-                <p className="text-xs text-slate-500">Includes earnings and locked amounts</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.total_balance_sub", "Includes earnings and locked amounts")}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Team reward today</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.team_reward_today", "Team reward today")}</p>
                 <p className="text-2xl font-semibold text-white">${Number(data.kpis.teamRewardToday ?? 0).toFixed(2)}</p>
-                <p className="text-xs text-slate-500">Past 24h</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.team_reward_today_sub", "Past 24h")}</p>
               </div>
               <div className="space-y-1 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Deposits</p>
+                <p className="text-xs uppercase tracking-wide text-slate-400">{t("dashboard.snapshot.deposits", "Deposits")}</p>
                 <p className="text-2xl font-semibold text-white">${data.user.depositTotal.toFixed(2)}</p>
-                <p className="text-xs text-slate-500">Lifetime deposits</p>
+                <p className="text-xs text-slate-500">{t("dashboard.snapshot.deposits_sub", "Lifetime deposits")}</p>
               </div>
             </div>
           </div>

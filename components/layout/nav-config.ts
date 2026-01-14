@@ -19,20 +19,21 @@ export type AppNavItem = {
   name: string
   href: string
   icon: LucideIcon
+  i18nKey?: string
 }
 
 export const PRIMARY_NAV_ITEMS: AppNavItem[] = [
-  { name: "Overview", href: "/dashboard", icon: Home },
-  { name: "Top-Up Center", href: "/deposit", icon: ArrowDownLeft },
-  { name: "Cash Out", href: "/withdraw", icon: ArrowUpRight },
+  { name: "Overview", href: "/dashboard", icon: Home, i18nKey: "nav.overview" },
+  { name: "Top-Up Center", href: "/deposit", icon: ArrowDownLeft, i18nKey: "nav.top_up_center" },
+  { name: "Cash Out", href: "/withdraw", icon: ArrowUpRight, i18nKey: "nav.cash_out" },
   // { name: "Missions & Quests", href: "/tasks", icon: BarChart3 },
-  { name: "Network Crew", href: "/team", icon: Users },
+  { name: "Network Crew", href: "/team", icon: Users, i18nKey: "nav.network_crew" },
   // { name: "Asset Catalog", href: "/coins", icon: Coins },
-  { name: "Wallet Hub", href: "/e-wallet", icon: CreditCard },
-  { name: "Activity Timeline", href: "/transactions", icon: History },
+  { name: "Wallet Hub", href: "/e-wallet", icon: CreditCard, i18nKey: "nav.wallet_hub" },
+  { name: "Activity Timeline", href: "/transactions", icon: History, i18nKey: "nav.activity_timeline" },
   // { name: "Help Desk", href: "/support", icon: HelpCircle },
-  { name: "Account Center", href: "/profile", icon: User },
-  { name: "Knowledge Base", href: "/terms", icon: FileText },
+  { name: "Account Center", href: "/profile", icon: User, i18nKey: "nav.account_center" },
+  { name: "Knowledge Base", href: "/terms", icon: FileText, i18nKey: "nav.knowledge_base" },
 
   // ✅ added
   // { name: "Logout", href: "/auth/login", icon: LogOut },
@@ -42,6 +43,7 @@ export const ADMIN_NAV_ITEM: AppNavItem = {
   name: "Admin Panel",
   href: "/admin",
   icon: Settings,
+  i18nKey: "nav.admin_panel",
 }
 
 const PAGE_TITLE_RULES: Array<{ pattern: RegExp; title: string }> = [

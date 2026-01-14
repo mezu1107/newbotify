@@ -25,7 +25,6 @@ export default async function dbConnect() {
   const seedFlag = process.env.SEED_IN_MEMORY
   const preferInMemory =
     seedFlag === "true" ||
-    (!seedFlag && process.env.NODE_ENV !== "production") ||
     (!hasUri && process.env.NODE_ENV !== "production")
   const allowFallback = process.env.NODE_ENV !== "production" || process.env.ALLOW_DB_FALLBACK === "true"
 

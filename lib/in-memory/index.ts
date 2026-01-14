@@ -159,6 +159,89 @@ class InMemoryQuery<T extends InMemoryDocument> implements PromiseLike<T[]> {
   }
 }
 
+class InMemorySingleQuery<T extends InMemoryDocument> implements PromiseLike<T | null> {
+  private projection?: Projection
+  private sortSpec?: SortSpec
+  private leanMode = false
+  private populateOptions: PopulateOption[] = []
+
+  constructor(private readonly collection: InMemoryCollection<T>, private readonly filter: QueryFilter = {}) {}
+
+  select(projection: Projection): this {
+    this.projection = projection
+    return this
+  }
+
+  sort(spec: SortSpec): this {
+    this.sortSpec = spec
+    return this
+  }
+
+  lean(): this {
+    this.leanMode = true
+    return this
+  }
+
+  populate(path: string, select?: string): this {
+    this.populateOptions.push({ path, select })
+    return this
+  }
+
+  async exec(): Promise<T | null> {
+    let results = this.collection.filterDocuments(this.filter)
+
+    if (this.sortSpec) {
+      const entries = Object.entries(this.sortSpec)
+      results = results.sort((a, b) => {
+        for (const [field, direction] of entries) {
+          const aValue = getValueAtPath(a, field)
+          const bValue = getValueAtPath(b, field)
+          if (aValue === bValue) continue
+          if (aValue === undefined || aValue === null) return 1 * direction
+          if (bValue === undefined || bValue === null) return -1 * direction
+          if (aValue < bValue) return -1 * direction
+          if (aValue > bValue) return 1 * direction
+        }
+        return 0
+      })
+    }
+
+    const doc = results[0]
+    if (!doc) return null
+
+    let clone = deepClone(doc)
+
+    if (this.populateOptions.length > 0) {
+      for (const option of this.populateOptions) {
+        clone = populateDocument(clone, this.collection, option)
+      }
+    }
+
+    if (this.projection) {
+      clone = applyProjection(clone, this.projection)
+    }
+
+    if (this.leanMode) {
+      return clone as T
+    }
+
+    return createModelInstance(this.collection, clone)
+  }
+
+  then<TResult1 = T | null, TResult2 = never>(
+    onfulfilled?: ((value: T | null) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
+  ): Promise<TResult1 | TResult2> {
+    return this.exec().then(onfulfilled, onrejected)
+  }
+
+  catch<TResult = never>(
+    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null,
+  ): Promise<T | null | TResult> {
+    return this.exec().catch(onrejected)
+  }
+}
+
 class InMemoryCollection<T extends InMemoryDocument> {
   constructor(public readonly name: string, private readonly documents: T[]) {}
 
@@ -387,6 +470,9 @@ class InMemoryDatabase {
     this.collections.set("levelHistories", new InMemoryCollection("levelHistories", []))
     this.collections.set("ledgerEntries", new InMemoryCollection("ledgerEntries", []))
     this.collections.set("bonuspayouts", new InMemoryCollection("bonuspayouts", []))
+    this.collections.set("otps", new InMemoryCollection("otps", []))
+    this.collections.set("clicks", new InMemoryCollection("clicks", []))
+    this.collections.set("logs", new InMemoryCollection("logs", []))
     this.collections.set("teamDailyProfits", new InMemoryCollection("teamDailyProfits", []))
     this.collections.set("teamDailyClaims", new InMemoryCollection("teamDailyClaims", []))
     this.collections.set("caches", new InMemoryCollection("caches", []))
@@ -450,6 +536,9 @@ function registerMongooseModels(db: InMemoryDatabase) {
     { name: "LevelHistory", collection: db.getCollection("levelHistories") },
     { name: "LedgerEntry", collection: db.getCollection("ledgerEntries") },
     { name: "BonusPayout", collection: db.getCollection("bonuspayouts") },
+    { name: "OTP", collection: db.getCollection("otps") },
+    { name: "Click", collection: db.getCollection("clicks") },
+    { name: "Log", collection: db.getCollection("logs") },
     { name: "TeamDailyProfit", collection: db.getCollection("teamDailyProfits") },
     { name: "TeamDailyClaim", collection: db.getCollection("teamDailyClaims") },
     { name: "Cache", collection: db.getCollection("caches") },
@@ -518,9 +607,21 @@ function registerInMemorySessions(db: InMemoryDatabase) {
 
 function createModelProxy<T extends InMemoryDocument>(collection: InMemoryCollection<T>) {
   return {
-    find: (filter: QueryFilter = {}) => collection.find(filter),
-    findOne: (filter: QueryFilter = {}) => collection.findOne(filter),
-    findById: (id: string) => collection.findById(id),
+    find: (filter: QueryFilter = {}, projection?: Projection) => {
+      const query = collection.find(filter)
+      if (projection) query.select(projection)
+      return query
+    },
+    findOne: (filter: QueryFilter = {}, projection?: Projection, _options?: unknown) => {
+      const query = new InMemorySingleQuery(collection, filter)
+      if (projection) query.select(projection)
+      return query
+    },
+    findById: (id: string, projection?: Projection, _options?: unknown) => {
+      const query = new InMemorySingleQuery(collection, { _id: id })
+      if (projection) query.select(projection)
+      return query
+    },
     countDocuments: (filter: QueryFilter = {}) => collection.countDocuments(filter),
     aggregate: (pipeline: Record<string, any>[]) => collection.aggregate(pipeline),
     create: (doc: Partial<T>) => collection.create(doc),

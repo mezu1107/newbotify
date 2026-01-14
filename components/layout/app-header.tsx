@@ -9,12 +9,15 @@ import { Menu } from "lucide-react"
 import { AUTH_HIDDEN_ROUTES } from "@/components/layout/quick-actions"
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer"
 import { PRIMARY_NAV_ITEMS } from "@/components/layout/nav-config"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 
 export function AppHeader() {
   const pathname = usePathname() ?? "/"
   const router = useRouter()
+  const { t } = useI18n()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -108,10 +111,11 @@ export function AppHeader() {
                     aria-current={isActive ? "page" : undefined}
                   >
                     <item.icon className="h-4 w-4" aria-hidden />
-                    <span>{item.name}</span>
+                    <span>{item.i18nKey ? t(item.i18nKey, item.name) : item.name}</span>
                   </Link>
                 )
               })}
+              <LanguageSwitcher variant="nav" />
             </div>
           </nav>
 
@@ -122,7 +126,7 @@ export function AppHeader() {
               className="inline-flex items-center gap-2 rounded-lg border border-slate-800/70 bg-slate-900/70 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/60 hover:text-white"
               onClick={() => void handleLogout()}
             >
-              Sign out
+              {t("action.sign_out", "Sign out")}
             </Button>
           </div>
         </div>

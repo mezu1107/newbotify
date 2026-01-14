@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { useFormState, useFormStatus } from "react-dom"
@@ -7,15 +7,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { submitDepositAction, type DepositFormState } from "@/app/wallet/actions"
 import { ArrowDownLeft, CheckCircle, Copy, Loader2, XCircle } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface DepositOption {
   id: string
@@ -34,6 +29,7 @@ const initialState: DepositFormState = { error: null, success: null }
 
 function SubmitButton() {
   const { pending } = useFormStatus()
+  const { t } = useI18n()
 
   return (
     <Button
@@ -44,12 +40,12 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Processing...
+          {t("deposit.form.processing", "Processing...")}
         </>
       ) : (
         <>
           <ArrowDownLeft className="mr-2 h-4 w-4" />
-          Submit Deposit for Review
+          {t("deposit.form.submit", "Submit Deposit for Review")}
         </>
       )}
     </Button>
@@ -57,10 +53,14 @@ function SubmitButton() {
 }
 
 export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps) {
+  const { t } = useI18n()
   const [state, formAction] = useFormState(submitDepositAction, initialState)
 
   const [selectedOptionId, setSelectedOptionId] = useState(() => options[0]?.id ?? "")
-  const selectedOption = useMemo(() => options.find((option) => option.id === selectedOptionId), [options, selectedOptionId])
+  const selectedOption = useMemo(
+    () => options.find((option) => option.id === selectedOptionId),
+    [options, selectedOptionId],
+  )
   const formattedMinDeposit = useMemo(
     () =>
       new Intl.NumberFormat("en-US", {
@@ -120,7 +120,6 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
     }
   }
 
-  // ✅ Allow all image types
   const handleReceiptChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const file = event.target.files?.[0] ?? null
 
@@ -159,7 +158,9 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
   if (!selectedOption || !selectedAddress) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>No deposit wallets are configured. Please contact support.</AlertDescription>
+        <AlertDescription>
+          {t("deposit.form.wallets_missing", "No deposit wallets are configured. Please contact support.")}
+        </AlertDescription>
       </Alert>
     )
   }
@@ -181,11 +182,10 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
         </Alert>
       )}
 
-      {/* Network Selection */}
       <section className="rounded-3xl border border-border/80 bg-card/90 p-5 shadow-lg shadow-primary/10 transition-colors">
         <div className="space-y-4">
           <Label className="text-sm font-semibold text-foreground/90">
-            Select Network
+            {t("deposit.form.select_network", "Select Network")}
           </Label>
           <div className="grid gap-3 sm:grid-cols-3">
             {options.map((option) => {
@@ -203,9 +203,7 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
                 >
                   <p className="text-xs uppercase text-muted-foreground">{option.network}</p>
                   <p className="text-sm font-semibold text-foreground">{option.label}</p>
-                  <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
-                    {option.address}
-                  </p>
+                  <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{option.address}</p>
                 </button>
               )
             })}
@@ -214,7 +212,9 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
 
         <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3 md:max-w-md">
-            <p className="text-sm font-semibold text-muted-foreground">Deposit address</p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              {t("deposit.form.address", "Deposit address")}
+            </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
                 readOnly
@@ -229,11 +229,11 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
               >
                 {copied ? (
                   <>
-                    <CheckCircle className="mr-2 h-4 w-4" /> Copied
+                    <CheckCircle className="mr-2 h-4 w-4" /> {t("deposit.form.copied", "Copied")}
                   </>
                 ) : (
                   <>
-                    <Copy className="mr-2 h-4 w-4" /> Copy
+                    <Copy className="mr-2 h-4 w-4" /> {t("deposit.form.copy", "Copy")}
                   </>
                 )}
               </Button>
@@ -243,7 +243,7 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
             <div className="flex shrink-0 justify-center">
               <img
                 src={qrCodeUrl}
-                alt="Deposit address QR code"
+                alt={t("deposit.form.qr_alt", "Deposit address QR code")}
                 className="h-44 w-44 rounded-xl border border-border/60 bg-card p-2 shadow-md"
               />
             </div>
@@ -251,13 +251,12 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
         </div>
       </section>
 
-      {/* Deposit Form */}
       <section className="rounded-3xl border border-border/80 bg-card p-5 shadow-lg shadow-primary/5">
         <div className="grid gap-5 md:grid-cols-2">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="deposit-amount" className="text-sm font-semibold text-foreground/90">
-                Amount (USDT)
+                {t("deposit.form.amount_label", "Amount (USDT)")}
               </Label>
               <Input
                 id="deposit-amount"
@@ -265,11 +264,9 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
                 type="number"
                 min={minDeposit}
                 step="0.01"
-                placeholder={`Enter amount (minimum $${formattedMinDeposit})`}
+                placeholder={`${t("deposit.form.amount_placeholder_prefix", "Enter amount (minimum $")}${formattedMinDeposit})`}
                 value={formState.amount}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, amount: event.target.value }))
-                }
+                onChange={(event) => setFormState((previous) => ({ ...previous, amount: event.target.value }))}
                 onInput={(event) => event.currentTarget.setCustomValidity("")}
                 onInvalid={(event) => {
                   const input = event.currentTarget
@@ -278,30 +275,34 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
                     return
                   }
                   if (input.validity.rangeUnderflow) {
-                    input.setCustomValidity(`Amount must be at least $${formattedMinDeposit}.`)
+                    input.setCustomValidity(
+                      `${t("deposit.form.amount_min_prefix", "Amount must be at least $")}${formattedMinDeposit}.`,
+                    )
                     return
                   }
-
                   input.setCustomValidity("")
                 }}
                 required
                 className="h-12 rounded-xl"
               />
               <p className="text-xs text-muted-foreground">
-                {`Minimum deposit is $${formattedMinDeposit}. You can deposit more if you wish.`}
+                {`${t("deposit.form.amount_help_prefix", "Minimum deposit is $")}${formattedMinDeposit}.${t(
+                  "deposit.form.amount_help_suffix",
+                  " You can deposit more if you wish.",
+                )}`}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-semibold text-foreground/90">Exchange</Label>
+              <Label className="text-sm font-semibold text-foreground/90">
+                {t("deposit.form.exchange_label", "Exchange")}
+              </Label>
               <Select
                 value={formState.exchangePlatform}
-                onValueChange={(value) =>
-                  setFormState((previous) => ({ ...previous, exchangePlatform: value }))
-                }
+                onValueChange={(value) => setFormState((previous) => ({ ...previous, exchangePlatform: value }))}
               >
                 <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Select exchange" />
+                  <SelectValue placeholder={t("deposit.form.exchange_placeholder", "Select exchange")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="binance">Binance</SelectItem>
@@ -309,41 +310,38 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
                   <SelectItem value="bybit">Bybit</SelectItem>
                   <SelectItem value="kucoin">KuCoin</SelectItem>
                   <SelectItem value="coinbase">Coinbase</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="other">{t("deposit.form.exchange_other", "Other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="transaction-number" className="text-sm font-semibold text-foreground/90">
-                Transaction Hash
+                {t("deposit.form.hash_label", "Transaction Hash")}
               </Label>
               <Input
                 id="transaction-number"
                 name="transactionNumber"
                 type="text"
-                placeholder="Paste the 64-character blockchain hash"
+                placeholder={t("deposit.form.hash_placeholder", "Paste the 64-character blockchain hash")}
                 value={formState.transactionNumber}
-                onChange={(event) =>
-                  setFormState((previous) => ({ ...previous, transactionNumber: event.target.value }))
-                }
+                onChange={(event) => setFormState((previous) => ({ ...previous, transactionNumber: event.target.value }))}
                 required
                 className="h-12 rounded-xl font-mono text-sm"
               />
             </div>
           </div>
 
-          {/* Upload Section */}
           <div className="space-y-3">
             <Label htmlFor="transaction-receipt" className="text-sm font-semibold text-foreground/90">
-              Upload Confirmation Screenshot
+              {t("deposit.form.upload_label", "Upload Confirmation Screenshot")}
             </Label>
             <Input
               key={receiptInputKey}
               id="transaction-receipt"
               name="receipt"
               type="file"
-              accept="image/*"   // ✅ now allows all image formats
+              accept="image/*"
               onChange={handleReceiptChange}
               className="h-12 cursor-pointer rounded-xl"
             />
@@ -351,16 +349,20 @@ export function DepositForm({ options, minDeposit, onSuccess }: DepositFormProps
             {receiptFile && (
               <div className="flex items-center gap-3 rounded-xl border border-dashed border-border/70 bg-background/80 p-3">
                 {receiptPreview ? (
-                  <img src={receiptPreview} alt="Transaction receipt preview" className="h-16 w-16 rounded-lg object-cover shadow-sm" />
+                  <img
+                    src={receiptPreview}
+                    alt={t("deposit.form.receipt_alt", "Transaction receipt preview")}
+                    className="h-16 w-16 rounded-lg object-cover shadow-sm"
+                  />
                 ) : (
                   <div className="flex h-16 w-16 items-center justify-center rounded bg-muted text-xs">
-                    Preview
+                    {t("deposit.form.preview", "Preview")}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{receiptFile.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {(receiptFile.size / 1024 / 1024).toFixed(2)} MB • {receiptFile.type}
+                    {(receiptFile.size / 1024 / 1024).toFixed(2)} MB ? {receiptFile.type}
                   </p>
                 </div>
                 <Button type="button" variant="ghost" size="icon" onClick={handleReceiptRemove}>

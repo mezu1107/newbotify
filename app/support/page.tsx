@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { HelpCircle, MessageSquare, Mail, Clock, CheckCircle, Loader2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 
 interface SupportTicket {
   id: string
@@ -23,6 +24,7 @@ interface SupportTicket {
 }
 
 export default function SupportPage() {
+  const { t } = useI18n()
   const [user, setUser] = useState<any>(null)
   const [tickets, setTickets] = useState<SupportTicket[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export default function SupportPage() {
         setTickets([
           {
             id: "TK001",
-            subject: "Withdrawal not processed",
+            subject: t("support.tickets.mock_withdrawal", "Withdrawal not processed"),
             status: "pending",
             priority: "high",
             createdAt: "2025-01-15T10:30:00Z",
@@ -57,7 +59,7 @@ export default function SupportPage() {
           },
           {
             id: "TK002",
-            subject: "Mining rewards question",
+            subject: t("support.tickets.mock_rewards", "Mining rewards question"),
             status: "resolved",
             priority: "low",
             createdAt: "2025-01-14T09:15:00Z",
@@ -72,7 +74,7 @@ export default function SupportPage() {
     }
 
     fetchData()
-  }, [])
+  }, [t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,12 +84,17 @@ export default function SupportPage() {
 
     try {
       // In real app, this would call API to create support ticket
-      await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      setSuccess("Support ticket created successfully! We'll get back to you within 24 hours.")
+      setSuccess(
+        t(
+          "support.form.success",
+          "Support ticket created successfully! We'll get back to you within 24 hours.",
+        ),
+      )
       setFormData({ subject: "", message: "", priority: "medium" })
     } catch (err) {
-      setError("Failed to create support ticket. Please try again.")
+      setError(t("support.form.error", "Failed to create support ticket. Please try again."))
     } finally {
       setIsSubmitting(false)
     }
@@ -134,26 +141,31 @@ export default function SupportPage() {
       <main className="flex-1 md:ml-64 overflow-auto">
         <div className="p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-balance">Support Center</h1>
-            <p className="text-muted-foreground">Get help with your account and platform features</p>
+            <h1 className="text-3xl font-bold text-balance">
+              {t("support.header.title", "Support Center")}
+            </h1>
+            <p className="text-muted-foreground">
+              {t("support.header.subtitle", "Get help with your account and platform features")}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Contact Information */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <HelpCircle className="w-5 h-5" />
-                    Contact Information
+                    {t("support.contact.title", "Contact Information")}
                   </CardTitle>
-                  <CardDescription>Multiple ways to reach our support team</CardDescription>
+                  <CardDescription>
+                    {t("support.contact.subtitle", "Multiple ways to reach our support team")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                     <Mail className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Email Support</p>
+                      <p className="font-medium">{t("support.contact.email", "Email Support")}</p>
                       <p className="text-sm text-muted-foreground">5gBotify@gmail.com</p>
                     </div>
                   </div>
@@ -161,30 +173,37 @@ export default function SupportPage() {
                   <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                     <MessageSquare className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Live Chat</p>
-                      <p className="text-sm text-muted-foreground">Available 24/7</p>
+                      <p className="font-medium">{t("support.contact.chat", "Live Chat")}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("support.contact.chat_availability", "Available 24/7")}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                     <Clock className="w-5 h-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Response Time</p>
-                      <p className="text-sm text-muted-foreground">Within 24 hours</p>
+                      <p className="font-medium">{t("support.contact.response_time", "Response Time")}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("support.contact.response_within", "Within 24 hours")}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Your Tickets */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Your Support Tickets</CardTitle>
-                  <CardDescription>Track your previous support requests</CardDescription>
+                  <CardTitle>{t("support.tickets.title", "Your Support Tickets")}</CardTitle>
+                  <CardDescription>
+                    {t("support.tickets.subtitle", "Track your previous support requests")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {tickets.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">No support tickets found</p>
+                    <p className="text-muted-foreground text-center py-4">
+                      {t("support.tickets.empty", "No support tickets found")}
+                    </p>
                   ) : (
                     <div className="space-y-3">
                       {tickets.map((ticket) => (
@@ -195,12 +214,17 @@ export default function SupportPage() {
                               <p className="text-sm text-muted-foreground">#{ticket.id}</p>
                             </div>
                             <div className="flex gap-2">
-                              <Badge className={getPriorityColor(ticket.priority)}>{ticket.priority}</Badge>
-                              <Badge className={getStatusColor(ticket.status)}>{ticket.status}</Badge>
+                              <Badge className={getPriorityColor(ticket.priority)}>
+                                {t(`support.tickets.priority.${ticket.priority}`, ticket.priority)}
+                              </Badge>
+                              <Badge className={getStatusColor(ticket.status)}>
+                                {t(`support.tickets.status.${ticket.status}`, ticket.status)}
+                              </Badge>
                             </div>
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Created: {new Date(ticket.createdAt).toLocaleDateString()}
+                            {t("support.tickets.created", "Created: ")}
+                            {new Date(ticket.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
@@ -210,11 +234,12 @@ export default function SupportPage() {
               </Card>
             </div>
 
-            {/* Create New Ticket */}
             <Card>
               <CardHeader>
-                <CardTitle>Create Support Ticket</CardTitle>
-                <CardDescription>Describe your issue and we'll help you resolve it</CardDescription>
+                <CardTitle>{t("support.form.title", "Create Support Ticket")}</CardTitle>
+                <CardDescription>
+                  {t("support.form.subtitle", "Describe your issue and we'll help you resolve it")}
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {error && (
@@ -232,10 +257,10 @@ export default function SupportPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject">{t("support.form.subject", "Subject")}</Label>
                     <Input
                       id="subject"
-                      placeholder="Brief description of your issue"
+                      placeholder={t("support.form.subject_placeholder", "Brief description of your issue")}
                       value={formData.subject}
                       onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
                       required
@@ -243,24 +268,27 @@ export default function SupportPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="priority">Priority</Label>
+                    <Label htmlFor="priority">{t("support.form.priority", "Priority")}</Label>
                     <select
                       id="priority"
                       className="w-full p-2 border border-input rounded-md bg-background"
                       value={formData.priority}
                       onChange={(e) => setFormData((prev) => ({ ...prev, priority: e.target.value as any }))}
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="low">{t("support.form.priority_low", "Low")}</option>
+                      <option value="medium">{t("support.form.priority_medium", "Medium")}</option>
+                      <option value="high">{t("support.form.priority_high", "High")}</option>
                     </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message">{t("support.form.message", "Message")}</Label>
                     <Textarea
                       id="message"
-                      placeholder="Please provide detailed information about your issue..."
+                      placeholder={t(
+                        "support.form.message_placeholder",
+                        "Please provide detailed information about your issue...",
+                      )}
                       rows={6}
                       value={formData.message}
                       onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
@@ -272,10 +300,10 @@ export default function SupportPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Ticket...
+                        {t("support.form.creating", "Creating Ticket...")}
                       </>
                     ) : (
-                      "Create Support Ticket"
+                      t("support.form.submit", "Create Support Ticket")
                     )}
                   </Button>
                 </form>

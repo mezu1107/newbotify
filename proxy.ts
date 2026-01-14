@@ -4,7 +4,7 @@ import { getTokenFromRequest, getUserFromRequest } from "@/lib/auth-middleware"
 import { enforceUnifiedRateLimit, getRateLimitContext, shouldBypassRateLimit } from "@/lib/rate-limit/edge"
 import { trackRequestRate } from "@/lib/observability/request-metrics"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const context = getRateLimitContext(request)
 
@@ -57,20 +57,8 @@ export async function middleware(request: NextRequest) {
         if (statusResponse.ok) {
           const payload = await statusResponse.json()
           if (payload?.blocked) {
-            const guardedPages = [
-              "/dashboard",
-              "/deposit",
-              "/withdraw",
-              "/transactions",
-              "/missions",
-            ]
-            const guardedApis = [
-              "/api/wallet",
-              "/api/deposit",
-              "/api/withdraw",
-              "/api/dashboard",
-              "/api/missions",
-            ]
+            const guardedPages = ["/dashboard", "/deposit", "/withdraw", "/transactions", "/missions"]
+            const guardedApis = ["/api/wallet", "/api/deposit", "/api/withdraw", "/api/dashboard", "/api/missions"]
 
             const isBlockedPage = guardedPages.some((prefix) => pathname.startsWith(prefix))
             const isBlockedApi = guardedApis.some((prefix) => pathname.startsWith(prefix))

@@ -9,6 +9,8 @@ import { PRIMARY_NAV_ITEMS, ADMIN_NAV_ITEM } from "@/components/layout/nav-confi
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 
 interface MobileNavDrawerProps {
@@ -28,6 +30,7 @@ interface DrawerUser {
 export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDrawerProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { t } = useI18n()
   const [shouldRender, setShouldRender] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(false)
   const [userError, setUserError] = useState<string | null>(null)
@@ -168,7 +171,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
               aria-current={isActive ? "page" : undefined}
             >
               <item.icon className="h-5 w-5" aria-hidden />
-              <span className="truncate">{item.name}</span>
+              <span className="truncate">{item.i18nKey ? t(item.i18nKey, item.name) : item.name}</span>
             </Link>
           </li>
         )
@@ -189,7 +192,9 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
             }
           >
             <ADMIN_NAV_ITEM.icon className="h-5 w-5" aria-hidden />
-            <span className="truncate">{ADMIN_NAV_ITEM.name}</span>
+            <span className="truncate">
+              {ADMIN_NAV_ITEM.i18nKey ? t(ADMIN_NAV_ITEM.i18nKey, ADMIN_NAV_ITEM.name) : ADMIN_NAV_ITEM.name}
+            </span>
           </Link>
         </li>
       )}
@@ -234,10 +239,10 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="text-base font-semibold leading-tight truncate">
-                    {user?.name ?? (isLoadingUser ? "Loading..." : "Guest")}
+                    {user?.name ?? (isLoadingUser ? t("status.loading", "Loading...") : t("status.guest", "Guest"))}
                   </p>
                   <p className="text-sm text-muted-foreground truncate">
-                    {user?.email ?? (userError ? "Sign in required" : "")}
+                    {user?.email ?? (userError ? t("status.sign_in_required", "Sign in required") : "")}
                   </p>
                 </div>
               </div>
@@ -248,7 +253,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
                 asChild
               >
                 <Link href="/profile" onClick={() => onOpenChange(false)}>
-                  View Profile
+                  {t("action.view_profile", "View Profile")}
                 </Link>
               </Button>
             </div>
@@ -262,6 +267,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
             <Separator className="border-border/60" />
 
             <div className="px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4">
+              <LanguageSwitcher variant="drawer" onSelected={() => onOpenChange(false)} />
               <Button
                 variant="ghost"
                 className="w-full justify-start rounded-2xl px-4 py-3 text-base font-medium"
@@ -269,7 +275,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
                   void handleLogout()
                 }}
               >
-                Sign out
+                {t("action.sign_out", "Sign out")}
               </Button>
             </div>
           </div>

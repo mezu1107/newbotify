@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TopLoaderProvider } from "@/components/top-loader"
 import { AppHeader } from "@/components/layout/app-header"
+import { I18nProvider } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 
 import "./globals.css"
@@ -35,10 +36,12 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans antialiased text-foreground")}>
         <Suspense fallback={null}>
           <TopLoaderProvider>
-            <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-              <AppHeader />
-              {children}
-            </ThemeProvider>
+            <I18nProvider>
+              <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+                <AppHeader />
+                {children}
+              </ThemeProvider>
+            </I18nProvider>
           </TopLoaderProvider>
         </Suspense>
       </body>
