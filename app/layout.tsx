@@ -1,10 +1,12 @@
 import type React from "react"
 import { Suspense } from "react"
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 import { ThemeProvider } from "@/components/theme-provider"
 import { TopLoaderProvider } from "@/components/top-loader"
 import { AppHeader } from "@/components/layout/app-header"
 import { I18nProvider } from "@/lib/i18n/provider"
+import { LANGUAGE_STORAGE_KEY, normalizeLanguageCode } from "@/lib/i18n/config"
 import { cn } from "@/lib/utils"
 
 import "./globals.css"
@@ -26,8 +28,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = cookies()
+  const storedLanguage = normalizeLanguageCode(cookieStore.get(LANGUAGE_STORAGE_KEY)?.value)
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={storedLanguage} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/logo.png" sizes="any" />
         <link rel="apple-touch-icon" href="/logo.png" />
@@ -36,7 +41,7 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans antialiased text-foreground")}>
         <Suspense fallback={null}>
           <TopLoaderProvider>
-            <I18nProvider>
+            <I18nProvider initialLanguage={storedLanguage}>
               <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
                 <AppHeader />
                 {children}

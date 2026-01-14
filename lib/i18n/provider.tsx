@@ -27,21 +27,40 @@ function applyDocumentDirection(language: LanguageCode) {
   document.documentElement.lang = language
 }
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>(DEFAULT_LANGUAGE)
+type I18nProviderProps = {
+  children: React.ReactNode
+  initialLanguage?: LanguageCode
+}
+
+export function I18nProvider({ children, initialLanguage }: I18nProviderProps) {
+  const [language, setLanguageState] = useState<LanguageCode>(initialLanguage ?? DEFAULT_LANGUAGE)
 
   useEffect(() => {
     if (typeof window === "undefined") return
     const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY)
-    const normalized = normalizeLanguageCode(stored)
-    setLanguageState(normalized)
-    applyDocumentDirection(normalized)
-  }, [])
+    if (stored) {
+      const normalized = normalizeLanguageCode(stored)
+      setLanguageState(normalized)
+      applyDocumentDirection(normalized)
+      if (typeof document !== "undefined") {
+        document.cookie = `${LANGUAGE_STORAGE_KEY}=${normalized}; path=/; max-age=31536000; samesite=lax`
+      }
+      return
+    }
+
+    if (initialLanguage) {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, initialLanguage)
+    }
+    applyDocumentDirection(initialLanguage ?? DEFAULT_LANGUAGE)
+  }, [initialLanguage])
 
   const setLanguage = useCallback((next: LanguageCode) => {
     setLanguageState(next)
     if (typeof window !== "undefined") {
       window.localStorage.setItem(LANGUAGE_STORAGE_KEY, next)
+    }
+    if (typeof document !== "undefined") {
+      document.cookie = `${LANGUAGE_STORAGE_KEY}=${next}; path=/; max-age=31536000; samesite=lax`
     }
     applyDocumentDirection(next)
   }, [])
