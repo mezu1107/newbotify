@@ -45,7 +45,7 @@ export function DepositPageClient({
     <div className="flex h-screen bg-background">
       <Sidebar user={context.user} />
 
-      <main className="flex-1 w-full overflow-auto md:ml-64">
+      <main className="flex-1 w-full overflow-auto">
         <div className="space-y-6 p-6">
           {loadError && (
             <Alert variant="destructive">

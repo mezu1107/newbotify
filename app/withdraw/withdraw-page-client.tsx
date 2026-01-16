@@ -21,7 +21,7 @@ export function WithdrawPageClient({ context, withdrawable, mainBalance, earning
   return (
     <div className="flex h-screen bg-background">
       <Sidebar user={context.user} />
-      <main className="flex-1 w-full min-w-0 overflow-auto md:ml-64">
+      <main className="flex-1 w-full min-w-0 overflow-auto">
         <div className="w-full max-w-none space-y-6 p-6 md:p-6">
           <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>

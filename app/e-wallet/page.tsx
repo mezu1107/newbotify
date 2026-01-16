@@ -120,7 +120,7 @@ export default function EWalletPage() {
     <div className="flex h-screen bg-background">
       <Sidebar user={user} />
 
-      <main className="flex-1 w-full min-w-0 overflow-auto md:ml-64">
+      <main className="flex-1 w-full min-w-0 overflow-auto">
         <div className="w-full max-w-none p-6 md:p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-balance">{t("ewallet.title", "E-Wallet")}</h1>
