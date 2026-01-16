@@ -7,6 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -67,17 +68,19 @@ export function LanguageSwitcher({ variant = "header", onSelected }: LanguageSwi
           <DropdownMenuSubTrigger className="gap-2">
             <span>{t("label.nigerian", "Nigerian")}</span>
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="w-56">
-            {NIGERIAN_OPTIONS.map((option) => (
-              <DropdownMenuItem
-                key={option.code}
-                onSelect={() => handleSelect(option.code)}
-                className={cn(option.code === language && "bg-accent text-accent-foreground")}
-              >
-                {t(option.labelKey, option.label)}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuSubContent>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent className="w-56">
+              {NIGERIAN_OPTIONS.map((option) => (
+                <DropdownMenuItem
+                  key={option.code}
+                  onSelect={() => handleSelect(option.code)}
+                  className={cn(option.code === language && "bg-accent text-accent-foreground")}
+                >
+                  {t(option.labelKey, option.label)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
         </DropdownMenuSub>
       </DropdownMenuContent>
     </DropdownMenu>
