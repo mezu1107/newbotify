@@ -220,13 +220,13 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
             anchorRef.current?.focus()
           }}
           className={cn(
-            "pointer-events-auto fixed left-0 top-0 z-[1000] flex h-screen w-[86vw] flex-col overflow-hidden border-r border-border/60 bg-card text-card-foreground shadow-2xl shadow-black/20 will-change-[transform,opacity]",
+            "pointer-events-auto fixed left-0 top-0 z-[1000] flex h-screen w-[86vw] flex-col overflow-y-auto border-r border-border/60 bg-card text-card-foreground shadow-2xl shadow-black/20 will-change-[transform,opacity]",
             "transition-[transform,opacity] duration-[240ms] ease-[cubic-bezier(.2,.8,.2,1)]",
             "data-[state=closed]:-translate-x-6 data-[state=closed]:scale-[0.98] data-[state=closed]:opacity-0",
             "data-[state=open]:translate-x-0 data-[state=open]:scale-100 data-[state=open]:opacity-100",
           )}
         >
-          <div className="flex h-full flex-col">
+          <div className="flex flex-col">
             <div className="space-y-4 px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
               <DialogPrimitive.Title id={titleId} className="sr-only">
                 {t("nav.drawer.title", "Mobile navigation")}
@@ -262,7 +262,7 @@ export function MobileNavDrawer({ open, onOpenChange, anchorRef }: MobileNavDraw
 
             <Separator className="border-border/60" />
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="px-4 py-4">
               {renderNavItems()}
             </div>
 

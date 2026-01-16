@@ -42,6 +42,51 @@ export function LanguageSwitcher({ variant = "header", onSelected }: LanguageSwi
     onSelected?.()
   }
 
+  if (variant === "drawer") {
+    return (
+      <div className="space-y-3">
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          {t("label.languages", "Languages")}
+        </div>
+        <div className="grid gap-2">
+          {LANGUAGE_OPTIONS.map((option) => (
+            <Button
+              key={option.code}
+              type="button"
+              variant="ghost"
+              className={cn(
+                "w-full justify-start rounded-2xl px-4 py-3 text-base font-medium",
+                option.code === language && "bg-accent text-accent-foreground",
+              )}
+              onClick={() => handleSelect(option.code)}
+            >
+              {t(option.labelKey, option.label)}
+            </Button>
+          ))}
+        </div>
+        <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          {t("label.nigerian", "Nigerian")}
+        </div>
+        <div className="grid gap-2">
+          {NIGERIAN_OPTIONS.map((option) => (
+            <Button
+              key={option.code}
+              type="button"
+              variant="ghost"
+              className={cn(
+                "w-full justify-start rounded-2xl px-4 py-3 text-base font-medium",
+                option.code === language && "bg-accent text-accent-foreground",
+              )}
+              onClick={() => handleSelect(option.code)}
+            >
+              {t(option.labelKey, option.label)}
+            </Button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
