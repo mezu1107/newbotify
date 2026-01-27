@@ -71,6 +71,11 @@ function buildOverrideSummaries(rule: any): OverrideSummary[] {
   return summaries
 }
 
+function displayOverridePct(value: number) {
+  if (value === 1) return 4
+  return value
+}
+
 interface LevelProgressProps {
   currentLevel?: number
   levelProgress?: {
@@ -235,7 +240,7 @@ export function LevelProgress({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("team.levels.direct_commission", "Direct Commission:")}</span>
               <span className="font-medium ">
-  15%
+  8%
 </span>
 
               </div>
@@ -245,7 +250,7 @@ export function LevelProgress({
                     {t(`team.levels.override.${summary.kind}`, overrideKindLabels[summary.kind])}:
                   </span>
                   <span className="font-medium">
-                    {summary.pct}% ({summary.teams.join(", ")})
+                    {displayOverridePct(summary.pct)}% ({summary.teams.join(", ")})
                   </span>
                 </div>
               ))}
@@ -330,7 +335,7 @@ export function LevelProgress({
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("team.levels.direct_commission", "Direct Commission:")}</span>
                    <span className="font-medium text-green-600">
-  15%
+  8%
 </span>
 
                   </div>
@@ -340,7 +345,7 @@ export function LevelProgress({
                         {t(`team.levels.override.${summary.kind}`, overrideKindLabels[summary.kind])}:
                       </span>
                       <span className="font-medium text-green-600">
-                        {summary.pct}% ({summary.teams.join(", ")})
+                        {displayOverridePct(summary.pct)}% ({summary.teams.join(", ")})
                       </span>
                     </div>
                   ))}
